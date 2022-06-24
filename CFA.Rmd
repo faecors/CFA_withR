@@ -1,0 +1,1328 @@
+---
+title: "CFA with R (`lavaan`)"
+author: "Rafael Pentiado Poerschke"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+      highlight: textmate
+      theme: flatly
+      number_sections: yes 
+      toc: yes
+      toc_float: 
+          collapsed: yes
+          smooth_croll: no
+  pdf_document: default
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+
+# Let's Start: On the Shop Floor
+**Loading the packages**
+```{r, eval=TRUE, include=TRUE, message=FALSE}
+library(lavaan)
+library(semPlot)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+library(rstatix)
+library(foreign)
+library(psych)
+library(tinytex)
+```
+
+**The `getwd()` returns an absolute filepath representing the current working directory of the R process;**
+```{r, diretorio}
+getwd()
+```
+
+`setwd("dir")` **is used to set the working directory.** 
+```{r}
+setwd("/Users/rafaelpoerschke/dados/multivariada")
+```
+
+## Data Set {.tabset .tabset-fade}
+
+**Assumptions**: Check the multivariate normality; multicolinearity; sample size and Positive Definiteness of cov-var matrix.
+
+Motivating example: Suppose you are a researcher studying the <u>effects of student background</u> on <span style="color: red;">academic achievement</span>. The dataset (worland5.csv) of 500 (*n=500*) students each with 9 observed variables.
+
+**Observed Variables**:
+
+Motivation, Harmony, Stability, Negative Parental Psychology, Socioeconomic Status (SES), Verbal IQ, Reading, Arithmetic and Spelling.
+The principal investigator hypothesizes <u>three</u> 
+
+**Latent Constructs**: 
+
+<u>Adjustment</u>, <u>Risk</u>, <u>Achievement</u> measured with its corresponding to the following codebook mapping:
+
+
+### Variables set 1
+**1) Adjustment (Focus)**
+
++ <u>motiv</u>: Motivation
+
++ <u>harm</u>: Harmony
+
++ <u>stabI</u>: Stability
+
+**2) Risk**
+
++ <u>ppsych</u>: (Negative) Parental Psychology
+
++ <u>ses</u>: SES
+
++ <u>verbal</u>: Verbal IQ
+
+**3) Achievement**
+
++ <u>read</u>: Reading
+
++ <u>arith</u>: Arithmetic Skills
+
++ <u>spell</u>: Spelling
+
+### Variables set 2
+
+SPSS Anxiety Questionnaire (SAQ).  The first <u>eight</u> items consist of the following (2,571 answers):
+
++ <u>q1</u>: Statistics makes me cry
++ <u>q2</u>: My friends will think I’m stupid for not being able to cope with SPSS
++ <u>q3</u>: Standard deviations excite me
++ <u>q4</u>: I dream that Pearson is attacking me with correlation coefficients
++ <u>q5</u>: I don’t understand statistics
++ <u>q6</u>: I have little experience with computers
++ <u>q7</u>: All computers hate me
++ <u>q8</u>: I have never been good at mathematics
+
+## {-}
+
+You can load the file directly into R with the following command. 
+
+**Loading the data:**
+```{r, banco1}
+dat <- read.csv("https://stats.idre.ucla.edu/wp-content/uploads/2021/02/worland5.csv")
+```
+Importing a datafile from SPSS arquive (we will use it latter)
+```{r, banco2}
+dat1 <- read.spss("https://stats.idre.ucla.edu/wp-content/uploads/2018/05/SAQ.sav", to.data.frame=TRUE, use.value.labels = FALSE)
+#save(dat1, file = "dat1.RData")
+```
+The most essential component of a structural equation model is
+<u>covariance</u> or the statistical relationship between items. The true population covariance, denoted $\mathbf{\Sigma}$, is called the variance-covariance matrix. Since we do not know $\mathbf{\Sigma}$ we can estimate it with our sample $\mathbf{\Sigma}(\theta)$, and call it $\mathbf{S}$, or the sample variance-covariance matrix. 
+
+The function `cov` specifies that we want to <u>obtain the covariance matrix</u> from the data.
+
+
+~~~
+
+**Question:** In this example, how the data are standardized, so if we try to extract the var-cov matrix, what we will have?
+
+~~~
+
+### Basics metrics {.tabset .tabset-fade}
+#### Covariance-Variance Matrix
+**Covariance-Variance Table set1**
+```{r, Covariance Matrix}
+cov(dat)
+```
+#### Correlation Matrix
+**Correlation Table set1**
+```{r, Correlation Table}
+round(cov(dat[,1:9]),2)
+```
+#### Covariance-Variance Matrix set2
+**Covariance-Variance Table set2**
+```{r, Covariance Matrix set2}
+round(cov(dat1[,1:8]),2)
+```
+#### Correlation Matrix set2
+**Correlation Table set2**
+```{r, Correlation Table set2}
+round(cor(dat1[,1:8]),2)
+```
+
+### {-}
+The `kable` package allows fancier tables, what enable a clear visualization and navigation along it. Check it out!
+
+**Correlation Table**
+```{r, Correlation dat1}
+kable(round(cor(dat[,1:8]),2)) %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+
+**Covariance-Variance Table**
+```{r, kabletable}
+kable(round(cov(dat1[,3:5]),2)) %>%
+  kable_styling(full_width = F, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+## Principal Components Analysis
+
+In Principal Components Analysis - this and next subsection are based on Kent et al. (1979)[^10], and Johnson & Wichern (2014)[^4], we will find a **Y** matrix as a result of the transformation matrix **W**, what contais the eigenvectors in columns, over the variances-covariances matrix  **X**. 
+
+[^4]:JOHNSON, Richard Arnold; WICHERN, Dean W. Applied multivariate statistical analysis. London, UK:: Pearson, 2014.
+
+[^10]:KENT, J. T.; BIBBY, John; MARDIA, K. V. Multivariate analysis. Amsterdam: Academic Press, 1979.
+
+$$
+\underbrace{\mathbf{Y}}_{(p \times p)} \: = \quad
+\underbrace{\mathbf{W}^{T}}_{(p \times p)}
+\underbrace{\mathbf{X}}_{(p \times p)}\:
+$$
+The dataset (dat1) has `r length(dat1)` variables and `r nrow(dat1)` observations, but we will focus just in the eight first questions. From it we can start to extract all necessary information. Let's start checking the Principal Components, first lets compute the eigenvalues and the eigenvectors. 
+
+***Eigenvalues***
+```{r, eigen set2}
+R_set2 <- cor(dat1 [,1:8])
+my.eigen = eigen(R_set2)
+round(my.eigen$values, 3)
+```
+***Eigenvectors***
+```{r, eigenvec set2}
+round(my.eigen$vectors,3)
+```
+How we can see, the first two are the ones that have values greater than the unit. Let's check it out again:
+```{r, eigen set2 first4}
+round(eigen(R_set2 [,1:8])$values, 4)
+```
+Let's do the same with the computed eigenvectors.
+```{r, eigenvec set2 first4}
+round(eigen(R_set2 [,1:8])$vectors, 3)
+```
+Another way to extract the eigenvalues in R: The `prcomp( )` function produces an unrotated principal component analysis - it`s a native function. For now, we are not concerned if the PCs are or not rotated.
+
+```{r, eigen set2 prcomp}
+pca_set2 <- prcomp(dat1 [,1:8],  scale = FALSE)  #ira normalizar os dados com o TRUE
+
+round(pca_set2$rotation, 3) #componentes criados
+```
+## Factor Analysis
+
+We can apply a complementary technique, i.e. Factor Analysis. 
+Note that the **X** matrix is now on the left side, and **L** is the matrix of factor loadings. 
+
+$$
+\mathbf{X}_{p \times 1} \: = \:
+\mu_{p \times 1} + \:
+\mathbf {L}_{p \times m}\:\mathbf {F}_{m \times 1}\: + \:
+\epsilon_{p \times 1}
+$$
+O modelo acima postula que a variação das variáveis observadas são dependentes de algumas variáveis aleatórias não observáveis e estimáveis  $F_{1},\: F_{2},\: \ldots, \:F_{q}$, chamadas de \textit{fatores comuns}, com um adicional de “$p$” fontes de variações $\varepsilon_{1},\:\varepsilon_{2},\: \ldots, \:\varepsilon_{p}$, chamados de \textit{fatores específicos} ou \textit{únicos} – essa denominação faz referência a sua associação única com cada variável.
+
+Agora, escrevemos que cada variável tem uma carga associada aos pesos da matriz quadrada  $\;\mathbf{W}_{(p \times p)}$ , que no caso da análise fatorial pode ter “$\;m\;$” fatores, com  “$m \leq p$\;”  e doravante denotada por  $\mathbf{L}_{(p \times m)}$. 
+$$
+\hat{\mathbf{\Sigma}}\,=\, \underbrace{\hat{\mathbf{\Lambda}}_{x}  \hat{\mathbf{\Lambda}}^{\prime}_{x}}_{\text{communality}} \; + \; \underbrace{\hat{\mathbf{\Psi}}_{\varepsilon}}_{\text{uniqueness}}
+$$
+
+Where $\mathbf{\Lambda_{p \times k}}$ is the matrix **loadings**, and $\mathbf{\Psi}$ is a diagonal matrix of unique variances of observed variables. 
+
+The variability in our data, $\mathbf{X}$, is given by $\mathbf{\Sigma}$, and its estimate $\mathbf{\hat{\Sigma}}$ is composed of the variability explained by the factors explained be a linear combination of the factors (**communality**) and of the variability, which can not be explained by a linear combination of the factors (**uniqueness**).
+
+Let's check it out using `Psych` package. We have computed the eigenvalues, so we know the we need two of them (`dat1`), I mean, we need computed just the first two factors and apply an orthogonal rotation on it.
+```{r, factor psych}
+fit <- fa(r = R_set2, nfactors = 2, fm = "ml", rotate = "Varimax")
+
+loads <- fit$loadings[,1:2]
+loads
+```
+The Factor number 1 is correlated with questions 06 and 07, so we can call it as the factor that measures the **Computer Knowledge**.  On the other hand, Factor 2 are strongly associated ( $>$ 0.5) with q01, q04 and q05, and it measures the **statistics Knowledge**.
+
+Remember tha the **loadings**, range from −1 to 1. This is the $\mathbf{\hat{\Lambda}}$in the equation above. The loadings are the contribution of each original variable to the factor. Variables with a high loading are well explained by the factor. 
+
+By squaring the loading we compute the fraction of the variable’s total variance explained by the factor. This proportion of the variability is denoted as **communality**. Another way to calculate the communality is to subtract the uniquenesses from 1.
+
+***Communalities***
+```{r, communalities psych}
+
+commu_dat1 <- fit$communality[1:8]
+commu_dat1
+```
+We can sum it, but why? It gives you the total (common) variance explained.
+```{r, communalities sum psych}
+
+soma_dat1 <- sum(commu_dat1)
+soma_dat1
+```
+Than computing the uniquenesses
+
+***Uniquenesses***
+```{r, uniq psych}
+
+uniq_dat1 <- fit$uniquenesses[1:8]
+uniq_dat1
+```
+The first chunk provides the **uniquenesses**, which range from 0 to 1. The uniqueness, sometimes referred to as *noise*, corresponds to the proportion of variability, which \underline{can not be explained} by a linear combination of the factors. This is the $\hat{\Psi}$ in the equation above. 
+
+So we can sum it
+```{r, uniq sum psych}
+
+soma_unique_dat1 <- sum(uniq_dat1)
+soma_unique_dat1
+```
+<div class="alert alert-info">
+  <strong>**NOTE**:</strong>
+  
+How many tests are we able to operate in EFA? May just check if the chosen number of factors are enough to explain the original variance. May we are able to choose a rotate method or estimators.
+
+</div>
+
+Joreskog (1969)[^1] proposed that a factor hypothesis could be tested by imposing restrictions on the EFA model — fixed elements in $\mathbf{\Lambda}$, $\mathbf{\Psi}$, usually 0. Needs more than $k^2$ restrictions. The ML solution is then found for the remaining free parameters. 
+
+The $\chi^2$ for the restricted solution gives a test for how well the hypothesized factor structure fits.
+
+[^1]: JÖRESKOG, K. G. A general approach to confirmatory maximum likelihood factor analysis. Psychometrika, 34(2), 183–202. 1969. doi:10.1007/bf02289343
+
+# CONFIRMATORY FACTOR ANALYSIS (CFA)
+
+All this section is based on Bollen (1989)[^5], Beaujeab (2014)[^9], Brown(2015)[^7], and Finch & French (2015)[^8].
+
+[^7]:BROWN, Timothy A. Confirmatory factor analysis for applied research. Guilford publications, 2015.
+
+[^5]:BOLLEN, Kenneth A. Structural equations with latent variables. John Wiley & Sons, 1989.
+
+[^8]:FINCH, W. Holmes; FRENCH, Brian F. Latent variable modeling with R. Routledge, 2015.
+
+[^9]:BEAUJEAN, A. Alexander. Latent variable modeling using R: A step-by-step guide. Routledge, 2014.
+
+Most social scientific concepts <u>are not directly observable</u>, e.g. intelligence, social capital, modernization. It makes them **hypothetical** or **latent** constructs. We can measure latent variables using **observable indicators**. 
+
+**The main objective** here is build a measurement model (data) that has behind it a Structural Model (theory) and check if they match.
+
+## Definitions
+Variables Relationships in a Path Model
+
+
++ **Observed variable**: a variable that exists in the data,
+a.k.a <u>item</u> or <u>manifest variable</u>.
+
++ **Latent variable**: a variable that is <u>constructed</u> and does not exist in the data. 
+
++ **Exogenous variable**: an independent variable either observed (x) or latent ($\xi$) that explains an endogenous variable. With no direct cause (independent variables). 
+
++ **Endogenous variable**: a dependent variable, either observed (y) or latent ($\eta$) that has a causal path leading to it.
+
++ **Measurement model**: a model that links observed variables with latent variables. 
+
++ **Indicator**: an <u>observed variable</u> in a measurement model (can be *exogenous* or *endogenous*).
+
++ **Factor**: a <u>latent variable</u> defined by its indicators (can be *exogenous* or *endogenous*). 
+
++ **Loading**: a path between an indicator and a factor. 
+
++ **Structural model**: a model that specifies causal relationships among exogenous variables to endogenous variables (can be observed or latent) 
+
++ **Regression Path**: a path between exogenous and endogenous variables (can be observed or latent).
+
+There is **subtlety** to the definition of an indicator. Although variables are typically seen as independent variables in a <u>linear regression</u>, the $x$ or $y$ label of an indicator in a measurement model depends on the factor it belongs to. An <u>indicator</u> is an <u>$x$-side indicator</u> if it depends on an *exogenous factor*(<u>this is our case</u>) and a $y$-side indicator if it depends on an *endogenous factor*.
+
+
+## The Lavaan Model Sintax
+
+### Regression Model {.tabset .tabset-fade}
+Regress onto: regression operator is (`~`), used for regression of observed outcome to observed predictors
+It has the following form:
+
+#### Model Description
+```{r, echo=TRUE}
+myModels <- list()
+fits <- list()
+myModels$Reg <- '
+#Reg
+motiv ~ ses+stabi+arith
+'
+```
+
+#### Diagram for a Regression Model
+```{r, regressionh, echo=FALSE, warning=FALSE, message=FALSE}
+
+fits$Reg <- lavaan::cfa(myModels$Reg, data = dat, std.lv=TRUE)
+
+semPaths(fits$Reg)  
+```
+
+### {-}
+
+(`~1`) intercept or mean (e.g., `q01 ~ 1` estimates the mean of variable q01)
+
+### Latent variable definition {.tabset .tabset-fade}
+(`=~`) indicator, used for latent variable to observed indicator in factor analysis measurement models = (`f =~ y1+y2`) The factor causes the items.
+
+We define them by listing their manifest variables
+
++ **Reflective** latent variable (`=~`)
+
++ + <u>*Reflective*</u>: All items measure the same construct. Direction of causality is from construct to measure (indicators), which means items are manifested by the construct. If interchangeable, and to a certain extent, it can even be removed. Measures <u>expected to be correlated</u>. 
+
++ + + **Diet**: (R1) I eat healthy food; (R2) I do not each much junk food; (R3) I have balanced Diet 
+
+```{r, reflex1, echo=TRUE}
+myModels$Reflex <- '
+#reflectiveconstruct
+pcknow =~ q06 + q07
+'
+
+fits$Reflex <- lavaan::cfa(myModels$Reflex, data = dat1, std.lv=TRUE)
+semPaths(fits$Reflex, whatLabels = "est", intercepts = FALSE, edge.label.cex = 0.9, edge.labels="both")
+```
+If q6 and q7 could covariate, we would have
+```{r, Reflex1cov, echo=TRUE}
+myModels$Reflex <- '
+#reflectiveconstruct
+pcknow =~ q06 + q07
+
+#covarianve
+q06 ~~ q07
+'
+fits$Reflex <- lavaan::cfa(myModels$Reflex, data = dat1, std.lv=TRUE)
+semPaths(fits$Reflex, whatLabels = "est", intercepts = FALSE, edge.label.cex = 0.9, edge.labels="both")
+```
+
+
++ **Formative** latent variable (`<~`)
+
++ + <u>*Formative*</u>: Direction of causality is from **measure** to **construct**. The latent variable is considered a consequence of its respective indicators. Correlation not requires and indicators <u>are not interchangeable</u>, replacing a formative indicator will alter the meaning of the latent variable: 
+
++ + + **Health**: (F1) I have a balanced diet; (F2) I exercise regularly (F3); I get sufficient sleep each night.
+
+
+
+### Other usefull stuff
+
++ (co)variance (`~~`): `x~~y`
+
++ Intercept (`~1`): `x ~ 1` estimates the mean of $x$
+
++ (`1*`) fixes parameter or loading to one: `f =~1*q`
+
++ (`NA*`) frees parameter or loading (useful to override default marker method): `f =~NA*q`
+
++ (`a*`) labels the parameter ‘a’, used for model constraints
+
+
+## Especification: A Complete Model Description
+
+              > myModel <- `#regressions
+              y1 ~ f1 + f2
+              f1 ~ f2 + x3
+              
+              #latent variables definition
+              f1 =~ x1 + x2 + x3
+              f2 =~ x4 + x4
+              
+              #variances and covariances
+              y1 ~~ y1
+              y1 ~~ y2
+              f1 ~~ f2
+              
+              #intercept
+              y1 ~ 1`
+
+
+
+We use Exploratory (EFA) when we have many variables and we have no idea how the items related with each other. In EFA each variable loads on all factors, and the number of latent variables are not determined before the analysis.
+The factors are assumed to be uncorrelated (Can use an oblique rotation to allow correlated factors). 
+
+**EFA has a limitation**, because the only true statistical tests in EFA are tests for the number of common factors (when estimated by ML). But CFA if you already have an hypothesis, the number of latent variables are set by the analyst and some effects of latent variables on observed variables are fixed to zero or some other constant. 
+
+In CFA you want to test your h0 so how well the sample can replicates covariance structure oh something knowing. Method for testing hypotheses about relationships among observed variables. Does this by imposing restrictions on an EFA model.
+
+<div class="alert alert-info">
+  <strong>Quest!</strong>
+  
++ Question: Do the variables have a given factor structure?
++ Question: How to compare competing models?
+
+</div>
+
+For EFA models, we start with the idea that each variable can be expressed as a regression on the common factors. For four variables, and one factor, $\xi$ (Csi), the model is
+
+$$\begin{align} 
+X_{1}=\lambda_{1}\xi+\varepsilon_{1}\\ 
+X_{2}=\lambda_{2}\xi+\varepsilon_{2}\\
+X_{3}=\lambda_{3}\xi+\varepsilon_{3}\\ 
+X_{4}=\lambda_{4}\xi+\varepsilon_{4}
+\end{align}$$
+
+and the **common factors** account for correlations among $x's$. The $\varepsilon_{i}$ are the errors terms, or **unique factors**.
+
+For $m$ factors, the common model model is
+
+$$\begin{align} 
+X_{1}=\lambda_{11}\xi_{1}+\lambda_{12}\xi_{2}+&\ldots+\lambda_{1m}\xi_{m}+\varepsilon_{1}\\ 
+X_{2}=\lambda_{21}\xi_{1}+\lambda_{22}\xi_{2}+&\ldots+\lambda_{2m}\xi_{m}+\varepsilon_{2}\\
+&\vdots\\
+X_{p}=\lambda_{p1}\xi_{1}+\lambda_{p2}\xi_{2}+&\ldots+\lambda_{pm}\xi_{m}+\varepsilon_{p}
+\end{align}$$
+
+The $\lambda$'s are referred to as the **loadings**, because they indicate which variable "loads" on which factor. This is a EFA model with *m*-factors and *p*-observed variables. 
+
+Lets remember our model from `dat1` that one we found two factors in eight questions.
+
++ The Factor number 1 ($\xi_{1}$) is correlated with <u>question 06</u> and <u>questions 07</u>, so we called it of **Computer Knowledge** factor.  
+
++ On the other hand, Factor 2 ($\xi_{2}$), strongly correlated with <u>question 01, 04 and 05</u>, and it measures the **Statistics Knowledge**. Knowing *a priori* we may able to estimate the model as
+
+$$
+\begin{align}
+X_{6}=&\lambda_{61}\xi_{1}+\varepsilon_{6}\\ 
+X_{7}=&\lambda_{71}\xi_{1}+\varepsilon_{7}\\
+X_{1}=& &\lambda_{12}\xi_{2}+\varepsilon_{1}\\ 
+X_{4}=& &\lambda_{42}\xi_{2}+\varepsilon_{4}\\
+X_{5}=& &\lambda_{52}\xi_{2}+\varepsilon_{5}
+\end{align}
+$$
+
+The equation (1) represents this relation 
+
+$$
+\mathbf{X}\,=\,\mathbf{\Lambda}_{x}\mathbf{\Xi}\,+\,\varepsilon \tag{1}
+$$
+ 
+
+$$
+\begin{bmatrix}
+X_{6}\\
+X_{7}\\
+X_{1}\\
+X_{4}\\
+X_{5}
+\end{bmatrix}
+=
+\begin{bmatrix}
+\lambda_{61} & 0 \\
+\lambda_{71} & 0 \\
+0 & \lambda_{12} \\
+0 & \lambda_{42} \\
+0 & \lambda_{52} \\\\
+\end{bmatrix}
+.
+\begin{bmatrix}
+\xi_{1}\\
+\xi_{2}\\
+\end{bmatrix}
++
+\begin{bmatrix}
+\varepsilon_{6}\\
+\varepsilon_{7}\\
+\varepsilon_{1}\\
+\varepsilon_{4}\\
+\varepsilon_{5}
+\end{bmatrix}
+$$
+Each column of $\Lambda_{x}$ corresponds to one **latent variable**; the first column to $\xi_{1}$, and the second to $\xi_{2}$. The double subscript of $\lambda_{ij}$ indicates the row and column position in $\mathbf{\Lambda}_{x}$.
+
+A zero in $\mathbf{\Lambda}_{x}$ indicates that the corresponding observed variable is not influenced by latent variable in that column. As EFA, $\lambda_{ij}$ describes the direct structural relation between a latent and observed variable - may be view as regression coefficients. Like in regression, the coefficient $\lambda_{ij}$ represents the number of units $x_{i}$ is expected to change for a one-unit change in $\xi_{j}$. 
+
+Before estimation, it is necessary to understand the relation of the covariance matrix of observed variables to the structural parameters of the model.
+
+
+### Diagram for a Reflective Model
+When we applied the rotation in EFA, usually the option is for an orthogonal process. In that way we are looking for extract the maximum of the information inside the factors. This option could be applied in Lavaan:
+
+```{r, model complete, echo=TRUE}
+myModels$Late <- '
+#Reg
+pcknow =~ q06 + q07
+statknow =~ q01 + q04 + q05
+
+#variances and covariances
+              pcknow ~~ 0*statknow
+              q06 ~~ q07
+              q01 ~~ q04
+              q01 ~~ q05
+              q04 ~~ q05
+              
+'
+```
+
+```{r, factors not covariate, echo=FALSE, warning=FALSE, message=FALSE}
+fits$Late <- cfa(myModels$Late, data = dat1, std.lv=TRUE)
+semPaths(fits$Late, whatLabels = "est", edge.label.cex = 0.9, edge.labels="both")  
+```
+But, think about these two latent variables, do they have any relation to each other? If you thought YES, we need to compute that information.
+
+```{r, factors covariate, echo=FALSE, warning=FALSE, message=FALSE}
+myModels$Latecov <- '
+#Reg
+pcknow =~ q06 + q07
+statknow =~ q01 + q04 + q05
+
+#variances and covariances
+              pcknow ~~ statknow
+              q06 ~~ q07
+              q01 ~~ q04
+              q01 ~~ q05
+              q04 ~~ q05
+              
+'
+
+fits$Latecov <- lavaan::cfa(myModels$Latecov, data = dat1, std.lv=TRUE)
+semPaths(fits$Latecov, whatLabels = "est", edge.label.cex = 0.9, edge.labels="both")  
+```
+
+
+
+## Model Implied Covariance
+
+Historically, EFA is used to answer the question, how much common variance is shared among the items. This variance-covariance matrix can be described using the **model-implied covariance matrix** $\mathbf{\Sigma}(\Theta)$. Note that this is in contrast to the observed population covariance matrix $\mathbf{\Sigma}$ which comes only from the data. The formula for the model-implied covariance matrix is:
+
+Model Implied Covariance (model) versus Covariance (data)
+
+$$
+\underbrace{\mathbf{\Sigma}(\theta)=\mathbf{\Lambda}_{x} \mathbf{\Phi} \mathbf{\Lambda^{\prime}}_{x} \; + \; \mathbf{\Theta}_{\varepsilon}}_{\mathbf{Model}}
+\; \; versus \; \; \underbrace{\mathbf{\Sigma}}_{\mathbf{Pop.}} \; \; versus \; \; \underbrace{\mathbf{S}=\hat{\mathbf{\Sigma}}}_{\mathbf{Sample \, Est.}}
+$$
+
++ $\mathbf{\Lambda}_{x}$ **factor loading** matrix is $p \times q$ (consisting of the same $\lambda$’s from the measurement model);
+
++ $\mathbf{\Phi}$ variance-convariance of the latent factors has $(q)(q+1)/2$ nonredudante parameters; and 
+
++ $\mathbf{\Theta}_{\varepsilon}$ variance-covariance of the residuals, has $(p)(p+1)/2$ unique parameters. 
+
+Remember equation (1), so we will have
+
+$$
+\mathbf{\Lambda_{x}}
+=
+\begin{bmatrix}
+\lambda_{61} & 0 \\
+\lambda_{71} & 0 \\
+0 & \lambda_{12} \\
+0 & \lambda_{42} \\
+0 & \lambda_{52} \\\\
+\end{bmatrix}
+; \quad
+\mathbf{\Phi}
+\begin{bmatrix}
+\phi_{11} & \\
+\phi_{21} & \phi_{22}\\
+\end{bmatrix}
+\\
+\mathbf{\Theta}_{\varepsilon}=
+\begin{bmatrix}
+Var(\varepsilon_{6}) & & & &\\
+0 & Var(\varepsilon_{7}) & \\
+0 & 0 & Var(\varepsilon_{1})& \\
+0 & 0 & 0 & Var(\varepsilon_{4})\\
+0 & 0 & 0 & 0 & Var(\varepsilon_{5})
+\end{bmatrix}
+\\
+\mathbf{\Sigma(\theta)}=
+\begin{bmatrix}
+\lambda^{2}_{61}\phi_{11}+Var(\varepsilon_{6}) & & & &\\
+\lambda_{71}\lambda_{61}\phi_{11} & \lambda^{2}_{71}\phi_{11}+Var(\varepsilon_{7}) & \\
+\lambda_{12}\lambda_{61}\phi_{12} & \lambda_{12}\lambda_{71}\phi_{12} & \lambda^{2}_{12}\phi_{22}+Var(\varepsilon_{1}) & \\
+\lambda_{42}\lambda_{61}\phi_{12} & \lambda_{42}\lambda_{71}\phi_{12} & \lambda_{42}\lambda_{12}\phi_{22} & \lambda^{2}_{42}\phi_{22}+Var(\varepsilon_{4})\\
+\lambda_{52}\lambda_{61}\phi_{12} & \lambda_{52}\lambda_{71}\phi_{12} & \lambda_{52}\lambda_{12}\phi_{22} & \lambda_{52}\lambda_{42}\phi_{22} & \lambda^{2}_{52}\phi_{22}+Var(\varepsilon_{5})
+\end{bmatrix}
+$$
+For instance, Var(q6) is $\lambda^{2}_{61}\phi_{11}+Var(\varepsilon_{6})$. So, the variance of question 6 indicator depends on $\lambda_{61}$, the coefficient linking it to **Computer Knowledge** ($\xi_{1}$), the variance ($\phi_{11}$) of this latent variable, and the measurement error variance ($Var(\varepsilon_{6})$) of the question 6.
+
+<div class="alert alert-info">
+  <strong>Quest!</strong> 
+  
+  Do you think is feasible q6 and q7 covariate with each other?
+</div>
+
+$$
+\mathbf{\Theta}_{\varepsilon}=
+\begin{bmatrix}
+Var(\varepsilon_{6}) & & & &\\
+Cov(\varepsilon_{6},\varepsilon_{7}) & Var(\varepsilon_{7}) & \\
+0 & 0 & Var(\varepsilon_{1})& \\
+0 & 0 & Cov(\varepsilon_{1},\varepsilon_{4})  & Var(\varepsilon_{4})\\
+0 & 0 & Cov(\varepsilon_{1},\varepsilon_{5})  & Cov(\varepsilon_{4},\varepsilon_{5})  & Var(\varepsilon_{5})
+\end{bmatrix}
+$$
+So, the $Cov(q1,q5)$ is $\lambda_{12} \lambda_{52}\phi_{22}+Cov(\varepsilon_{1},\varepsilon_{5})$.
+
+
+
+
+<div class="alert alert-info">
+  <strong>Quest!</strong> 
+  
+  Why $\mathbf{\Theta}_{\varepsilon}$ has $\frac{(p)(p+1)}{2}$ elements?
+</div>
+
+### Mathematics appendix
+
+Some assumptions of the factor analysis model
+
++ mean of the intercepts is zero $E(\tau)=0$;
+
++ mean of the factor is zero $E(\eta)=0$;
+
++ mean of the residual is zero $E(\epsilon)=0$;
+
++ covariance of the factor with the residual os zero $Cov(\eta,\epsilon)=0$.
+
+**Expectation**
+
+$$
+\begin{align}
+\mu_{y} \, = \, E(\mathbf{y})\, & = \,E(\tau+\mathbf{\Lambda\eta}+\epsilon)\\
+& =E(\tau)+E(\mathbf{\Lambda\eta})+E(\epsilon)\\
+& =0+E(\mathbf{\Lambda\eta})+0\\
+& =E(\mathbf{\Lambda\eta})\\
+& =\mathbf{\Lambda}E(\eta)\\
+& =\mathbf{\Lambda}\eta
+\end{align}
+$$
+**Covariance Structure**
+
+$$
+\begin{align}
+\mathbf{\Sigma}_{\theta} \, = \, Cov(\mathbf{y})\, & = \,E(\tau+\mathbf{\Lambda\eta}+\epsilon)\\
+& =Var(\tau)+Var(\mathbf{\Lambda\eta})+Var(\epsilon)\\
+& =0+Var(\mathbf{\Lambda\eta})+Var(\epsilon)\\
+& =Var(\mathbf{\Lambda\eta})+Var(\epsilon)\\
+& =\mathbf{\Lambda}Var(\eta)\mathbf{\Lambda}^{\prime}+Var(\epsilon)\\
+& =\mathbf{\Lambda\Psi}\mathbf{\Lambda}^{\prime}+\mathbf{\Theta}_{\epsilon}
+\end{align}
+$$
+
+This is true due to the assumptions we made above and properties of covariance, such as the fact that the variance of a constant is zero and $Cov(\mathbf{AB})\mathbf{A}=\mathbf{A}Cov(\mathbf{B})\mathbf{A}^{\prime}$. We have defined new matrices where $Cov(\mathbf{\eta})=\mathbf{\Psi}$ is the variance-covariance matrix of the factors $\eta$ and  $Var(\epsilon)=\mathbf{\Theta}_{\epsilon}$ is the variance of the residuals.
+
+<div class="alert alert-info">
+  <strong>Theorem</strong> 
+  
+  Let $x \in \mathbb{R}^{p \times 1}$ be random (column) vector with covariance matrix $\mathbf{\Sigma} \in \mathbb{R}^{p \times p}$. Let $y = \mathbf{A}x$, where $\mathbf{A} \in \mathbb{R}^{n \times p}$ and $y \in \mathbb{R}^{n \times 1}$. Consider $\mathbf{\Sigma} \equiv Cov(\mathbf{X})=E[(x-E[x])(x-E[x])^{\prime}]$. 
+
+The theorem says that
+
+  $$
+  Cov(\mathbf{A}x)=\mathbf{A}\Sigma\mathbf{A}^{\prime}.
+  $$
+Proof:    
+
+$$
+\begin{align}
+Cov(y) \, = \, Cov(\mathbf{A}x)\, & = \,E[(\mathbf{A}x-E[\mathbf{A}x])(\mathbf{A}x-E[\mathbf{A}x])^{\prime}]\\
+& =\,E[(\mathbf{A}x-\mathbf{A}E[x])(\mathbf{A}x-\mathbf{A}E[x])^{\prime}]\\
+& =\,E[\mathbf{A}(x-E[x])(x-E[x])\mathbf{A}^{\prime}]\\
+& =\,\mathbf{A}E[(x-E[x])(x-E[x])^{\prime}]\mathbf{A}^{\prime}\\
+& =\,\mathbf{A}\mathbf{\Sigma}\mathbf{A}^{\prime}\\
+& & \blacksquare
+\end{align}
+$$
+
+</div>
+
+
+## A Path Model: pictorial representation (diagram)
+
+
+**Defined Model**
+```{r}
+#one factor three items, default marker method
+myModels$m1a  <- ' f  =~ stabi + ppsych + ses'   
+ 
+```
+
+Running model Raw data
+
+```{r}
+onefac3items_a <- lavaan::cfa(myModels$m1a, data=dat) 
+summary(onefac3items_a)
+```
+
+or covs (input n)
+
+```{r}
+example.cov <- cov(dat1[,1:9]) 
+fits$m4 <- lavaan::cfa(myModels$Latecov, sample.cov = example.cov, sample.nobs = 2571)
+summary(fits$m4)
+```
+
+
+
+# IDENTIFICATION
+
+## Degrees of Freedom
+
+Then, $\mathbf{\Sigma}(\theta)$ is decomposed into $\mathbf{\Lambda_{x}}$ matrix that has $pq$ elements; $\Phi$ has $(q)(q+1)/2$ nonredundant parameters, and  $\mathbf{\Theta}_{\varepsilon}$ has $(p)(p+1)/2$ parameters. 
+
+Thus $\mathbf{\Sigma}(\theta)$ is decomposed into $pq\; +\; (q)(q+1)/2 \;+\;(p)(p+1)/2$ parameters. With $p$ variables in $\mathbf{X}$, $\mathbf{\Sigma}$ has $(p)(p+1)/2$ **know-to-be-identified** elements. 
+
+So the number of **free parameters** in ($t$) must be less than or equal to the number of unique elements in the covariance matrix of $\mathbf{X}$. 
+
+$$
+\tag{2}
+t \quad \leq \quad \frac{1}{2}(p)(p+1)  
+$$
+
+The *t-rule* present in (2) is a necessary but not sufficient condition for identification. 
+
+In regression models, identification is never an issue, just because they are always **just-identified** models. This mean that the number of parameters to estimate exactly equal the amount of non-redundant information in the data set. 
+
+**Known Values** or non-redundant variances/covariances in the data set matrix: total number of parameters.
+
+The concept of a **fixed** or **free parameter** is essential in CFA. The total number of parameters in a CFA model is determined by the number of **known values ** **($kv$)** in your population variance-covariance matrix $\Sigma$, given by the formula $(2)$ where $p$ is the number of items/manifest variables in your survey. 
+
+Suppose the principal investigator thinks that the q1, q4 and q5 items of the SAQ are the observed indicators of <u>Statknow</u>. To obtain the sample covariance matrix $\mathbf{S}=\mathbf{\Sigma}$, which is an estimate of the population covariance matrix $\mathbf{\Sigma}$, use the command `select`, choose the interest columns, and the command `cov`. The function round with the option 2 specifies that we want to round the numbers to the second digit.
+
+The **known values** serve as the primary restriction in terms of **how many total parameters we are able to estimate**. The known values serve as the upper limit of the number of parameters you can possibly estimate in our model. The parameters coming from the model are called model parameters and are calculates with (3). 
+
+$$
+\tag{3}
+\text{n. parameters}\;=\quad pq\; +\; \frac{(q)(q+1)}{2} \;+\;\frac{(p)(p+1)}{2}
+$$
+for $p$ variables and $q$ factors (latent).
+```{r}
+latent <- select(dat1, q06, q07, q01, q04, q05)
+round(cov(latent[,]),2)
+```
+
+For the model of `statknow =~ q01 + q04 + q05` we have three items, so 3(3+1)/2 = 6 (since by symmetry, $\theta_{12}=\theta_{21},\, \theta_{13}=\theta_{31},\, \theta_{23}=\theta_{32}$) <u>known values</u> from the var-cov matrix, one parameter from $y$ latent variable $\psi_{11}$ and 3 more parameters from $\lambda$'s. In total we have 10 total parameters, but we just have only 6 known values. 
+
+$$
+\begin{equation}
+\tag{4}
+\Sigma(\theta)=\underbrace{\begin{bmatrix}
+\lambda_{1}     \\
+\lambda_{2}     \\
+\lambda_{3}     \\
+            \end{bmatrix}
+ }_{\mathbf{loandings}} \underbrace{\begin{bmatrix}
+(\psi_{11})
+            \end{bmatrix}
+ }_{\mathbf{variance \; of \; the \;factor}} \underbrace{\begin{bmatrix}
+\lambda_{1}  & \lambda_{2}  & \lambda_{3}    \\
+            \end{bmatrix}
+ }_{\mathbf{loadings}} + \underbrace{\begin{bmatrix}
+\theta_{11} & - & -   \\
+\theta_{21} & \theta_{22} & -       \\
+\theta_{31} & \theta_{32} & \theta_{33}    \\
+            \end{bmatrix}
+            }_{\mathbf{residual \; covariance}}
+\end{equation}
+$$
+The unique parameters in the model (4) are 10 (6 var-cov, 3 loadings e 1 factor var). Observe that we don`t have a fixed parameter. Not good, model is <u>under identified</u> (can find solution). And changing for four items and one LV?
+
+$$
+\begin{equation}
+\tag{8}
+\Sigma(\theta)=\underbrace{\begin{bmatrix}
+\lambda_{1}     \\
+\lambda_{2}     \\
+\lambda_{3} \\
+\lambda_{4} \\
+            \end{bmatrix}
+ }_{\mathbf{loandings}} \underbrace{\begin{bmatrix}
+(\psi_{11})
+            \end{bmatrix}
+ }_{\mathbf{variance \; of \; the \;factor}} \underbrace{\begin{bmatrix}
+\lambda_{1}  & \lambda_{2}  & \lambda_{3} & \lambda_{4}    \\
+            \end{bmatrix}
+ }_{\mathbf{loadings}} + \underbrace{\begin{bmatrix}
+\theta_{11} & - & - & -   \\
+0 & \theta_{22} & - & -       \\
+0 & 0 & \theta_{33} &     \\
+0 & 0 & 0 & \theta_{44}    \\
+            \end{bmatrix}
+            }_{\mathbf{residual \; covariance}}
+\end{equation}
+$$
+For four items we will have ten pieces of non-redundant information: 4(4+1)/2 = 10. So, if the none of their error variances covary, we have 10 of unique parameters, and 9 number of fixed parameters (4 loadings, 4 variances and one variance of the factor ($\psi_{11}$).
+So we have a model overidentified.
+
+<div class="alert alert-info">
+  <strong>Free Parameters</strong> 
+  
+<u>number of free parameters (**t**) </u>= n of unique parameters - number of fixed parameters
+</div>
+
+So, the 
+
+<div class="alert alert-info">
+  <strong>Degrees of Freedom</strong> 
+  
+<u>degrees of freedom (**df**) </u> = numb. of known values - number of free parameters
+</div>
+
+<div class="alert alert-info">
+  <strong>Table!</strong>
+  
++ **df negative**: known < fixed parameters (*under-identified* - <span style="color: red;"> cannot run </span>)
+
++ **df = 0**: **known** = fixed (*saturated or just-identified model* - no model fit statistics)
+
++ **df positive**: **known** > fixed (*over-identified* - model fit stats can be assessed)
+</div>
+
+# ESTIMATION
+
+## Defining the Metric of Latent Variable
+
+How it is a latent variable, which is right metric for it?
+
+**To standardize or not to standardize, that`s the question**
+
+**a) standardized**:
+($b^{*}$): better when comparing coefficients within the same model\
+
+**b) unstandardized** ($b$) (natural metric): comparing coefficients for the
+same variable relationships across samples or meaningful raw score units
+(dollar, height, age).
+
+
+We have two ways to identify the model
+
+### Marked variable method
+
+**Fixing the loads**: This method requires a single factor loading for each LV be constrained to an arbitrary value (usually the first one). Fixes the first loading (default in R) of the first factors. We set the scale to that item to everything else. 
+
+**Usage:** You can use when you have the same scale items before...
+
+$$
+\Sigma(\theta)=\underbrace{\begin{bmatrix}
+1     \\
+\lambda_{71}     \\
+1     \\
+\lambda_{42}     \\
+\lambda_{52}     
+            \end{bmatrix}
+ }_{\mathbf{loandings}} \underbrace{\begin{bmatrix}
+\psi_{11} & \\
+\psi_{12} & \psi_{22}
+            \end{bmatrix}
+ }_{\mathbf{variance \; of \; the \;factor}} \underbrace{\begin{bmatrix}
+1  & \lambda_{71}  & 1 & \lambda_{42} & \lambda_{52} \\
+            \end{bmatrix}
+ }_{\mathbf{loadings}} + \underbrace{\begin{bmatrix}
+\theta_{66} & 0 & 0 & 0 & 0  \\
+0 & \theta_{77} & 0 & 0 & 0   \\
+0 & 0 & \theta_{11} & 0 & 0    \\
+0 & 0 & 0 & \theta_{44} & 0    \\
+0 & 0 & 0 & 0 & \theta_{55}    \\
+            \end{bmatrix}
+            }_{\mathbf{residual \; covariance}}
+$$
+So
+
+```{r, twofactor, echo=FALSE, warning=FALSE, message=FALSE}
+myModels$Latecov <- '
+#Reg
+pcknow =~ q06 + q07
+statknow =~ q01 + q04 + q05
+
+#variances and covariances
+              
+'
+
+fits$Latecov <- lavaan::cfa(myModels$Latecov, data = dat1, std.lv=FALSE)
+semPaths(fits$Latecov, whatLabels = "est", edge.label.cex = 0.9, edge.labels="both", residuals = TRUE)  
+```
+
+
+
+
+```{r, summarymodel1}
+summary(fits$Latecov)
+```
+
+
+The interpretation is easy, first we have the loadings at the **Estimate** column (*q7*(1.384)) and `q6` as 1? 
+
+It means `lavaan` is fixing the first loading at 1 (<u>marker method</u> is the *default method*). So it is a fixed parameter, there is no statistics for it, but the others are free estimates. The number os free parameters are 13 minus 2 fixed parameters. The *df* is 15 (unique parameters) - 11 = 4.
+
+For one unit (in terms of item *q6*) increase in **Pcknow**, item **q7** goes up 1.384 points . In **Variances** we can see that variance of the factor, in scale of item `q6`, and the **dot** (.) means error.
+
+### Standardized Latent Variable
+
+Fixing the variance of each factor to 1 but freely estimates of the all loadings. It makes a LV a standardized variable (Z-score). If the indicator variables are also standardized, the loadings are interpreted as regression coefficients. Moreover, the covariance among the LV becomes a correlation.
+
+$$
+\Sigma(\theta)=\underbrace{\begin{bmatrix}
+\lambda_{61}     \\
+\lambda_{71}     \\
+\lambda_{12}     \\
+\lambda_{42}     \\
+\lambda_{52}     
+            \end{bmatrix}
+ }_{\mathbf{loandings}} \underbrace{\begin{bmatrix}
+1 & \\
+\psi_{12} & 1
+            \end{bmatrix}
+ }_{\mathbf{variance \; of \; the \;factor}} \underbrace{\begin{bmatrix}
+\lambda_{61}  & \lambda_{71}  & \lambda_{12} & \lambda_{42} & \lambda_{52} \\
+            \end{bmatrix}
+ }_{\mathbf{loadings=5param}} + \underbrace{\begin{bmatrix}
+\theta_{66} & 0 & 0 & 0 & 0  \\
+0 & \theta_{77} & 0 & 0 & 0   \\
+0 & 0 & \theta_{11} & 0 & 0    \\
+0 & 0 & 0 & \theta_{44} & 0    \\
+0 & 0 & 0 & 0 & \theta_{55}    \\
+            \end{bmatrix}
+            }_{\mathbf{residual \; covariance=5param.}}
+$$
+Checking *t-rule*
+$$
+1+5+5 \leq [8\times(8+1)]\frac{1}{2} \; \Leftrightarrow \;11 \; \leq \;15
+$$
+
+Syntax no R
+
+```{r, resumo}
+#two factors, variance std 
+myModels$Latecov2 <- '
+#Reg
+pcknow =~ NA*q06 + q07
+statknow =~ NA*q01 + q04 + q05
+
+#variances and covariances
+pcknow ~~ 1*pcknow 
+statknow ~~ 1*statknow
+'
+              
+fits$Latecov2 <- lavaan::cfa(myModels$Latecov2, data = dat1, std.lv=FALSE)
+```
+
+Now what is it doing? 
+
+Lavaan use as default marker method, so we have to override it freeing the first parameter (`NA`) of it. The syntax `NA*read` frees the loading of the first item because by default marker method fixes it to one. And then we have to fix variance to one, and **double till** means the variance of the factor - `pcknow ~~ 1*pcknow`. There is no blank row in estimated variables, and the $pcknow = statknow = 1$ in estimate variances. For one <u>standard deviation</u> increase in **Pcknow**,  *q6* goes up 0.68 points.
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+semPaths(fits$Latecov2, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE)  
+```
+```{r, sumLatecov2}
+lavaan::summary(fits$Latecov2)
+
+```
+
+
+# EVALUATION: Fit Statistics
+
+Since we have an over-identified model, How well does this model fit?
+
+## A note on sample size: Does size matter?
+
+Model chi-square is sensitive to large sample sizes, but does that mean we stick with small samples? The answer is no, larger samples are always preferred. 
+
+CFA and the general class of structural equation model are actually large sample techniques and much of the theory is based on the premise that your sample size is as large as possible. So how big of a sample do we need? Kline (2016)[^6] notes the *N:q* rule, which states that the sample size should be determined by the number of  parameters in your model, and the recommended ratio is 20:1. 
+
+This means that if you have 10 parameters, you should have *n=200*. A sample size less than 100 is almost always untenable according to Kline (2016).
+
+[^6]: KLINE, Rex B. Principles and practice of structural equation modeling. Guilford publications, 2016.
+
+
+## Exact Fit: Model chi-square
+
+Is my model good enough to perfectly reproduce the population covariance matrix?
+
+The model *chi-square* is defined as either or depending on the statistical package where is the sample size and is the fit function from maximum likelihood (in lavaan, this is known as the Test Statistic for the Model Test User Model), which is a statistical method used to estimate the parameters in your model. The model chi-square is a <u>meaningful test</u> only when you have an **over-identified model** (i.e., there are still degrees of freedom left over after accounting for all the free parameters in your model).
+
+The model chi-square is proportional to the discrepancy of $\mathbf{\Sigma{(\hat{\theta}})}$ and $\mathbf{S}$, the higher the chi-square the more positive the value of $\mathbf{S} \, - \, \mathbf{\Sigma{(\hat{\theta}})}$, defined as residual covariance.  It tests whether the covariance matrix derived from the model represents the population covariance. 
+
+$$
+\text{h}_{0}: \mathbf{\Sigma{(\theta})}=\mathbf{\Sigma}\\
+\text{h}_{1}: \mathbf{\Sigma{(\theta})} \neq \mathbf{\Sigma}
+$$
+
+Generally, chi-square is used as an **absolute fit index**, with a low chi-square value relative to the degrees of freedom (and higher p-value) indicating better model fit. Since the test is used to reject a null hypothesis representing perfect fit, chi-square is often referred to as a **‘badness of fit’** or **‘lack of fit index’**(ALAVI et al. )[^10].
+
+The model chi-square is defined as $nF_{ml}$, and the $F_{ml}$ is the fit function from maximum likelihood
+
+$$
+F_{ml}\,=\,log|\mathbf{\hat{\Sigma}(\theta)}|+tr(\mathbf{S}\mathbf{\hat{\Sigma}^{-1}(\theta)})-log|\mathbf{S}|-(p+q)
+$$
+with $n$ as sample size, $p$ exogenous variables, and $q$ is the number of endogenous variables. So it`s $nF_{ml}\,\chi^{2}\, \sim \, (df_{\text{user}})$.
+
+[^10]:ALAVI, M., VISENTIN, D. C., THAPA, D. K., HUNT, G. E., WATSON, R., & CLEARY, M. L.. Chi-square for model fit in confirmatory factor analysis.2020.
+
+The Test Statistic is relatively large (23.935) and there is an additional row with P-value (Chi-square) indicating that we reject the null hypothesis.
+
+```{r, summaryLatecov2}
+#Eight Item Two-Factor CFA and Latent Covs = 1 (Over-Identified)
+summary(fits$Latecov2)
+```
+
+The larger the chi-square value the larger the difference between the sample implied covariance matrix $\mathbf{\Sigma{(\hat{\theta}})}$ and the sample observed $\mathbf{S}$ covariance matrix, and the more likely you will reject your model.
+
+We can recreate the p-value which is essentially zero, using the density function of the chi-square with 20 degrees of freedom $\chi^{2}_{4}$. Note that scientific notation of $8.23 \times 10^{5}$ means $8.23/10^{5}$ which is a really small number. 
+
+**Prob do Chi-Square**
+```{r, chisqprob}
+#model chi-square
+pchisq(q=23.935,df=4,lower.tail=FALSE)
+```
+
+Since $p<0.05$, using the model chi-square criteria alone we reject the null hypothesis that the model fits the data.
+
+It is well documented in CFA and SEM literature that the chi-square is often overly sensitive in model testing especially for large samples. For models with 75 to 200 cases chi-square is a reasonable measure of fit. Since the power of the model are positively correlated to the size of the sample (like in regression that we want to reject the null hypothesis), for 400 cases or more it is nearly almost always significant.
+
+
+Note that scientific notation of means which is a really small number, using the model chi-square criteria alone we reject the null hypothesis that the model fits the data. 
+
+
+## Incremental versus absolute fit index
+
+For over-identified models, there are many types of fit indexes available to the researcher. Historically, model chi-square was the only measure of fit but in practice the null hypothesis was often rejected due to the chi-square’s heightened sensitivity under large samples. 
+
+To resolve this problem, **approximate fit indexes** that were not based on accepting or rejecting the null hypothesis were developed. Approximate fit indexes can be further classified into 
+
++ a) absolute and 
++ b) incremental or relative fit indexes. 
+
+An incremental fit index (a.k.a. relative fit index) assesses the ratio of the deviation of the user model from the worst fitting model (a.k.a. the baseline model) against the deviation of the saturated model from the baseline model. Conceptually, if the deviation of the user model is the same as the deviation of the saturated model (a.k.a best fitting model), then the ratio should be 1. Alternatively, the more discrepant the two deviations, the closer the ratio is to 0 (see figure below). 
+
+Examples of **incremental** fit indexes are the *CFI* and *TLI*. An **absolute** fit index on the other hand, does not compare the user model against a baseline model, but instead compares it to the **observed data**. An example of an absolute fit index is the RMSEA.
+
+
+## Approximate Fit Index
+
+### (Optional) Model test of the baseline or null model
+
+Before to check other statistics we need to check what a **baseline model** is.
+
+The **model test baseline** is also known as the **null model**, where all covariances are set to zero and freely estimates variances. Rather than estimate the factor loadings, here we only estimate the observed means and variances (removing all the covariances). Recall that we have $p(p+1)/2$ covariances. Since we are only estimating the $p$ variances we have  degrees of freedom, or in this particular model $p(p+1)/2-p$ degrees of freedom. You can verify in the output below that we indeed have 8 free parameters and 28 degrees of freedom.
+
+```{r, base line model 2}
+#Model Test User Model:
+#Base Line model
+myModels$base <- 'q01 ~~ q01
+                  q02 ~~ q02
+                  q03 ~~ q03
+                  q04 ~~ q04
+                  q05 ~~ q05
+                  q06 ~~ q06
+                  q07 ~~ q07
+                  q08 ~~ q08'                                                  
+
+#Running base model
+onefac3items_base <- lavaan::cfa(myModels$base, data=dat1) 
+summary(onefac3items_base) 
+ 
+```
+
+```{r, base line model var2}
+semPaths(onefac3items_base, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE) 
+```
+There is no factor predicting it, there is no residual, so the residual is the variance - with no covariances. This is the baseline model, the worst of them, because probably the variables are correlated with each other.
+
+Think of the **null** or **baseline model** as the <u>worst model</u> you can come up with and the **saturated model** as the <u>best model</u>. The **saturated model** or just identified, it is that with df=0. So the <u>**user model**</u> will be the one is between the baseline and saturated model.
+
+Theoretically, the baseline model is useful for understanding how other fit indices are calculated.
+
+
+
+![Caption for the picture.](/Users/rafaelpoerschke/dados/multivariada/fit.png)
+
+### a) Incremental
+
+#### CFI 
+
+CFI is the Comparative Fit Index – values can range between 0 and 1 (values greater than 0.90, conservatively 0.95 indicate good fit). The CFI or comparative fit index is a popular fit index as a supplement to the model chi-square. Let $\delta=\chi^{2}-df$ where $df$ is the degrees of freedom for that particular model. 
+
+The closer $\delta$  is to zero, the more the model fits the data. 
+
+The formula for the CFI is:
+$$
+CFI = \frac{\delta \text{(Baseline)}-\delta \text{(User)}}{\delta \text{(Baseline)}}
+$$
+
+To manually calculate the CFI, recall the selected output from the eight-item one factor model:
+
+
+Now, we will estimate our **model**:
+
+```{r, base line model var}
+#one factor eight items, variance std 
+myModels$m3a <- 'f =~ q01 + q02 + q03 + q04 + q05 + q06 + q07 + q08' 
+onefac8items_a <- lavaan::cfa(myModels$m3a, data=dat1,std.lv=TRUE) 
+summary(onefac8items_a, fit.measures=TRUE, standardized=TRUE)
+semPaths(onefac8items_a, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE) 
+```
+First calculate the number of total parameters, which are 8 loadings $\lambda_{1}, \ldots, \lambda_{8} $, 8 residual variances $\theta_{1},\ldots,\theta_{8}$, and 1 variance of the factor 
+$\psi_{11}$. By the variance standardization method, we have fixed 1 parameter, namely. The number of free parameters is then:
+
+$$\text{n. of free parameters}\,\,=\,\,17 \,\,\text{total parameters}\,\, - \,\, 1 \,\, \text{fixed parameters}\,\, = \quad 16.$$
+
+Finally, there are $8(8+1/2)=26$ known values from the variance covariance matrix so the degrees of freedom is
+
+$$df\,\,=\,\,36 \,\,\text{know values}\,\, - \,\, 16 \,\, \text{free parameters}\,\, = \quad 20.$$
+
+
+Then $\delta \text{(Baseline)}=4164.572$ and $df\text{(Baseline)}=28$, and $\chi^{2}\text{(User)}=554.191$
+ and $\text{(User)}=20$. So  $\delta \text{(Baseline)}=4164.572-28=4136.572$ and $\delta \text{(User)}=554.191-20=534.191$. We can plug all of this into the following equation:
+ 
+$$
+CFI \, = \, \frac{4136.572-534.191}{4136.572} \, = \, \frac{3602.381}{4136.572} \, = \, 0.871
+$$
+
+If $\delta \text{(User)}=0$, then it means that the user model is not misspecified, so the numerator becomes $\text{(Baseline)}$ and the ratio becomes 1. The closer the CFI is to 1, the better the fit of the model; with the maximum being 1. Some criteria claims 0.90 to 0.95 as a good cutoff for good fit [citation needed]. 
+ 
+#### Tucker-Lewis (TLI)
+
+The term used in the Tucker Lewis Index TLI is the relative chi-square (a.k.a. normed chi-square) defined as $\frac{\chi^{2}}{df}$. Compared to the model chi-square, relative chi-square is less sensitive to sample size.
+
+TLI which also ranges between 0 and 1 (if it’s greater than 1 it should be rounded to 1) with values greater than 0.90 indicating good fit. If the CFI and TLI are less than one, the CFI is always greater than the TLI.
+
+The TLI formula is defined like:
+$$
+TLI \, = \, \frac{min[\chi^2 \text{(Baseline)} / df \text{(Baseline)},1]-min[\chi^2 \text{(User)} / df  \text{(User)},1]}{min[\chi^2 \text{(Baseline)} / df \text{(Baseline)},1]-1}
+$$
+In the denominator we have a 1 since $\chi^2 \text{(Satureted)}=0$ and  $df \text{(Satureted)}=0$ implies that $min(\chi^2 \text{(Satureted)}/df\text{(Satureted)},1)=1$. Also, the TLI can be greater than 1 but for practical purposes we round it to 1. Given the eight-item one factor model:
+
+$$
+TLI \, = \, \frac{4164.572/ 28-554.191 / 20}{4164.572 / 28-1} \, = \, 0.819
+$$
+
+### b) Absolute
+
+#### RMSEA 
+
+RMSEA is the root mean square error of approximation.
+The root mean square error of approximation is an absolute measure of fit because it does not compare the discrepancy of the user model relative to a baseline model like the CFI or TLI. Instead, RMSEA defines $\delta$ as the non-centrality parameter which measures the **degree of misspecification**. Recall from the CFI that $\delta=\chi^2-df$ where $df$ is the degrees of freedom for that particular model. The greater the $\delta$ the more misspefied the model.
+
+$$
+RMSE = \sqrt{\frac{\delta}{df(n-1)}}
+$$
+where $n$ is the total number of observations. The cutoff criteria as defined in Kline (2016, p.274-275)
+
+<div class="alert alert-info">
+  <strong>Table!</strong>
+  
++ $\leq 0.05$ (**close-fit**)
++ between $0.05$ and  $**0.08**$ (reasonable approximate fit, fails close-fit but also fails poor-fit)
++ $\geq 0.10$ (**poor-fit**)
+</div>
+
+In the case of our SAQ-8 factor analysis, $n=2,571$, $df(User)=20$ and $\delta (User)=534.191$ which we already known from calculating the CFI. Here $\delta$ is large relative to degrees of freedom.
+
+$$
+RMSE = \sqrt{\frac{534.191}{20(2,571-1)}}=\sqrt{0.0104}=0.102
+$$
+Our RMSEA = 0.10 indicating poor fit, as evidence by the large $\delta$ relative to the degrees of freedom.
+
+### SRMR
+This is a badness of fit index, the bigger the value, the worse the fit. A SMSR lower or egual to 0.05 is a good fit and between 0.05 e 0.09 is considered an adequate fit (MacCallum et al. 1996)[^2]
+
+[^2]:MACCALLUM, R. C., BROWNE, M. W., & SUGAWARA, H. M. Power analysis and determination of sample size for covariance structure modeling. Psychological Methods, 1, 130–149, 1996.
+
+
+# INTERPRETATION
+
+## Standardized Solution in Lavaan
+By default, `lavaan` chooses the marker method (Option 1) if nothing else is specified. To better interpret the factor loadings, often times you would request the **<u>standardized solutions</u>**. Going back to our orginal marker method object `onefac3items_a` we request the summary but also specify that `standardized=TRUE`.
+
+```{r, sumLatecov2 plain}
+# 2 factors 5 items, plain model
+myModels$Latecov2_plain <- '
+#Reg
+pcknow =~ q06 + q07
+statknow =~ q01 + q04 + q05 
+
+#variances and covariances
+
+statknow ~~ pcknow
+
+'
+fits$Latecov2_plain <- lavaan::cfa(myModels$Latecov2_plain, data = dat1, meanstructure = FALSE)            
+summary(fits$Latecov2_plain, standardized=TRUE, fit.measures=TRUE)
+# standardized=TRUE will show us all methods (marker, variance and automatic standardized)
+```
+
+Alternatively you can request a more condensed output of the <u>standardized solution</u> by the following, note that the output only outputs `Std.all`. It means the are standardizing the factor variance to one and is standardized the items by it self. So now we have a kind of correlations.
+
+Notice that there are two additional columns, `Std.lv` (variance standardized) and `Std.all`. 
+
+Comparing the two solutions, the loadings and variance of the factors are different but the residual variances are the same.
+
+**Interpretation**
+~~~
+
+I mean,  for one standard deviation in **q6**, **Pcknow** goes up to 0.604 standard deviation units.
+~~~
+```{r, resumo intercept}
+#two factors, variance std and intercept 
+myModels$Latecov2_intercept <- '
+#Reg
+pcknow =~ NA*q06 + q07
+statknow =~ NA*q01 + q04 + q05 
+
+#variances and covariances
+pcknow ~~ 1*pcknow 
+statknow ~~ 1*statknow
+statknow ~~ pcknow
+
+# intercepts 
+               #pcknow ~ 1 
+               #statknow ~ 1
+'
+              
+fits$Latecov2_intercept <- lavaan::cfa(myModels$Latecov2_intercept, data = dat1, std.lv=FALSE, meanstructure = TRUE)
+summary(fits$Latecov2_intercept,standardized=TRUE, fit.measures=TRUE)
+```
+Since we have the correlation between factor and indicators, <u>squaring a completely standardized factor loading</u> provides the proportion of variance in the indicator that is explained by the latent factor. For example, **pcknow** accounts for 36,5\% of the variance in the indicator **q6** ($0,604^{2}=0,3648$). So, 63\% ($1-0,604^{2}=0.6352$) of the observed variance in **q6** is estimated to be <u>unique</u> or error variance.
+```{r, path for intercept}
+semPaths(fits$Latecov2_intercept, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE)
+```
+
+## Modification Index
+
+The Modification Index reflects an approximation of how much the overall model $\chi^{2}$ would decrease in the fixed or constrained parameter was freely estimated.
+
+Modification indices can be requested by adding the argument `modindices = TRUE` in the `summary()` call, or by calling the function `modindices()` directly. By default, modification indices are printed out for each nonfree (or fixed-to-zero) parameter. 
+
+The modification indices are supplemented by the **expected parameter change (EPC)** values (column epc). The last three columns contain the standardized EPC values (sepc.lv: only standardizing the latent variables; sepc.all: standardizing all variables; sepc.nox: standardizing all but exogenous observed variables).
+
+Let`s run baseline model
+```{r, mod indi}
+modindices(onefac8items_a, sort = TRUE)
+```
+the modification index (mi) which is a 1-degree chi-square statistic.
+We see that by far the most impactful parameter is `q06 ~~ q07` with a chi-square change of 323.096 - minus 323.096 in the predecessor $\chi^{2}$. 
+
+Sample Variance-Covariance Matrix (S)
+
+Model-Implied Variance-Covariance ($\Sigma$)
+
+Fitted Residual Matrix (Unstandardized Residual Matrix)
+This is simply the difference between the observed and implied covariance matrix and mean vector.
+```{r, residual matrix}
+residuals(fits$Latecov2)
+fitted.values(fits$Latecov2) 
+
+cov_obs <- pesquisa %>% 
+  select(-2, -3) 
+
+  round(cov(cov_obs),3)
+```
+
+
+Standardized Residual Matrix
+inspect or extract information from a fitted lavaan object
+
+"cov.ov":The  model-implied  variance-covariance  matrix  of  the  observed  variables. The `lavInspect()` and `lavTech()` functions  can  be  used  to  inspect/extract  information  that  is stored inside (or can be computed from) a fitted lavaan object
+```{r}
+cor_table <- inspect(fits$Latecov2, "cov.ov")
+cor_table
+```
+
+lavInspect() on a fitted lavaan object returns a list of the model matrices that are used internally to represent the model. The free parameters are nonzero integers.
+
+```{r}
+lavInspect(fits$Latecov2) 
+```
+Parameters
+```{r}
+parameterestimates(fits$Latecov2)
+
+```
+Fit Mearures
+```{r}
+fitmeasures(fits$Latecov2)
+
+```
+```{r}
+pesquisa <- data.frame(dat1[,1:7])
+pesquisa %>% 
+  select(-2, -3)
+round(cov(pesquisa),3)
+```
+
+
+# References
