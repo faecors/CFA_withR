@@ -184,7 +184,7 @@ round(my.eigen$vectors,3)
 ```
 How we can see, the first two are the ones that have values greater than the unit. Let's check it out again:
 ```{r, eigen set2 first4}
-round(eigen(R_set2 [,1:8])$values, 4)
+round(eigen(R_set2 [,1:8])$values, 3)
 ```
 Let's do the same with the computed eigenvectors.
 ```{r, eigenvec set2 first4}
@@ -1276,20 +1276,25 @@ modindices(onefac8items_a, sort = TRUE)
 the modification index (mi) which is a 1-degree chi-square statistic.
 We see that by far the most impactful parameter is `q06 ~~ q07` with a chi-square change of 323.096 - minus 323.096 in the predecessor $\chi^{2}$. 
 
-Sample Variance-Covariance Matrix (S)
 
-Model-Implied Variance-Covariance ($\Sigma$)
+**Model-Implied Variance-Covariance ($\hat{\Sigma}$)**
+```{r, covs fited matrix}
+fitted.values(fits$Latecov2) 
+```
+**Sample Variance-Covariance Matrix (S)**
+```{r, covs sample matrix}
 
-Fitted Residual Matrix (Unstandardized Residual Matrix)
+pesquisa <- data.frame(dat1[,1:7])
+cov_obs <- pesquisa %>% 
+  select(q06, q07, q01, q04, q05) 
+
+  round(cov(cov_obs),3)
+```
+
+**Fitted Residual Matrix** (Unstandardized Residual Matrix)
 This is simply the difference between the observed and implied covariance matrix and mean vector.
 ```{r, residual matrix}
 residuals(fits$Latecov2)
-fitted.values(fits$Latecov2) 
-
-cov_obs <- pesquisa %>% 
-  select(-2, -3) 
-
-  round(cov(cov_obs),3)
 ```
 
 
@@ -1317,12 +1322,7 @@ Fit Mearures
 fitmeasures(fits$Latecov2)
 
 ```
-```{r}
-pesquisa <- data.frame(dat1[,1:7])
-pesquisa %>% 
-  select(-2, -3)
-round(cov(pesquisa),3)
-```
+
 
 
 # References
