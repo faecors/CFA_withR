@@ -1,2 +1,2 @@
 # CFA_withR
-Confimatory Factor Analysis (CFA) for dummies
+Confimatory Factor Analysis (CFA) for dummies.
