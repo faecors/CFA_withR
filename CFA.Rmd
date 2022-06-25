@@ -766,8 +766,8 @@ Suppose the principal investigator thinks that the q1, q4 and q5 items of the SA
 The **known values** serve as the primary restriction in terms of **how many total parameters we are able to estimate**. The known values serve as the upper limit of the number of parameters you can possibly estimate in our model. The parameters coming from the model are called model parameters and are calculates with (3). 
 
 $$
-\tag{3}
-\text{n. parameters}\;=\quad pq\; +\; \frac{(q)(q+1)}{2} \;+\;\frac{(p)(p+1)}{2}
+\boxed{\tag{3}
+\text{n. parameters}\;=\quad pq\; +\; \frac{(q)(q+1)}{2} \;+\;\frac{(p)(p+1)}{2}}
 $$
 for $p$ variables and $q$ factors (latent).
 ```{r}
@@ -1026,7 +1026,7 @@ Generally, chi-square is used as an **absolute fit index**, with a low chi-squar
 The model chi-square is defined as $nF_{ml}$, and the $F_{ml}$ is the fit function from maximum likelihood
 
 $$
-F_{ml}\,=\,log|\mathbf{\hat{\Sigma}(\theta)}|+tr(\mathbf{S}\mathbf{\hat{\Sigma}^{-1}(\theta)})-log|\mathbf{S}|-(p+q)
+\boxed{F_{ml}\,=\,log|\mathbf{\hat{\Sigma}(\theta)}|+tr(\mathbf{S}\mathbf{\hat{\Sigma}^{-1}(\theta)})-log|\mathbf{S}|-(p+q)}
 $$
 with $n$ as sample size, $p$ exogenous variables, and $q$ is the number of endogenous variables. So it`s $nF_{ml}\,\chi^{2}\, \sim \, (df_{\text{user}})$.
 
@@ -1114,16 +1114,18 @@ Theoretically, the baseline model is useful for understanding how other fit indi
 
 #### CFI 
 
-CFI is the Comparative Fit Index – values can range between 0 and 1 (values greater than 0.90, conservatively 0.95 indicate good fit). The CFI or comparative fit index is a popular fit index as a supplement to the model chi-square. Let $\delta=\chi^{2}-df$ where $df$ is the degrees of freedom for that particular model. 
+CFI is the Comparative Fit Index – values can range between 0 and 1 (values greater than 0.90, conservatively 0.95 indicate good fit). The CFI or comparative fit index is a popular fit index as a supplement to the model chi-square. 
+
+Let $\boxed{\delta=\chi^{2}-df}$ where $df$ is the degrees of freedom for that particular model. 
 
 The closer $\delta$  is to zero, the more the model fits the data. 
 
 The formula for the CFI is:
 $$
-CFI = \frac{\delta \text{(Baseline)}-\delta \text{(User)}}{\delta \text{(Baseline)}}
+\boxed{CFI = \frac{\delta \text{(Baseline)}-\delta \text{(User)}}{\delta \text{(Baseline)}}}
 $$
 
-To manually calculate the CFI, recall the selected output from the eight-item one factor model:
+To manually calculate the CFI, recall two factor model:
 
 
 Now, we will estimate our **model**:
@@ -1135,24 +1137,33 @@ onefac8items_a <- lavaan::cfa(myModels$m3a, data=dat1,std.lv=TRUE)
 summary(onefac8items_a, fit.measures=TRUE, standardized=TRUE)
 semPaths(onefac8items_a, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE) 
 ```
-First calculate the number of total parameters, which are 8 loadings $\lambda_{1}, \ldots, \lambda_{8} $, 8 residual variances $\theta_{1},\ldots,\theta_{8}$, and 1 variance of the factor 
+First calculate the number of total parameters, which are 8 loadings $\lambda_{1}, \ldots, \lambda_{8}$, 8 residual variances $\theta_{1},\ldots,\theta_{8}$, and 1 variance of the factor 
 $\psi_{11}$. By the variance standardization method, we have fixed 1 parameter, namely. The number of free parameters is then:
 
 $$\text{n. of free parameters}\,\,=\,\,17 \,\,\text{total parameters}\,\, - \,\, 1 \,\, \text{fixed parameters}\,\, = \quad 16.$$
 
-Finally, there are $8(8+1/2)=26$ known values from the variance covariance matrix so the degrees of freedom is
+Finally, there are $8(8+1)/2=36$ known values from the variance covariance matrix so the degrees of freedom is
 
 $$df\,\,=\,\,36 \,\,\text{know values}\,\, - \,\, 16 \,\, \text{free parameters}\,\, = \quad 20.$$
 
 
-Then $\delta \text{(Baseline)}=4164.572$ and $df\text{(Baseline)}=28$, and $\chi^{2}\text{(User)}=554.191$
- and $\text{(User)}=20$. So  $\delta \text{(Baseline)}=4164.572-28=4136.572$ and $\delta \text{(User)}=554.191-20=534.191$. We can plug all of this into the following equation:
+Then $\delta \text{(Baseline)}=4164.572$ and
+
+$df\text{(Baseline)}=28$, and
+
+$\chi^{2}\text{(User)}=554.191$ and 
+
+$\text{(User)}=20$. 
+ 
+So  $\delta \text{(Baseline)}=4164.572-28=4136.572$ and $\delta \text{(User)}=554.191-20=534.191$. We can plug all of this into the following equation:
  
 $$
 CFI \, = \, \frac{4136.572-534.191}{4136.572} \, = \, \frac{3602.381}{4136.572} \, = \, 0.871
 $$
 
-If $\delta \text{(User)}=0$, then it means that the user model is not misspecified, so the numerator becomes $\text{(Baseline)}$ and the ratio becomes 1. The closer the CFI is to 1, the better the fit of the model; with the maximum being 1. Some criteria claims 0.90 to 0.95 as a good cutoff for good fit [citation needed]. 
+If $\delta \text{(User)}=0$, then it means that the user model is not misspecified, so the numerator becomes $\text{(Baseline)}$ and the ratio becomes 1. The closer the CFI is to 1, the better the fit of the model; with the maximum being 1. 
+
+Some criteria claims 0.90 to 0.95 as a good cutoff for good fit. 
  
 #### Tucker-Lewis (TLI)
 
@@ -1164,12 +1175,13 @@ The TLI formula is defined like:
 $$
 TLI \, = \, \frac{min[\chi^2 \text{(Baseline)} / df \text{(Baseline)},1]-min[\chi^2 \text{(User)} / df  \text{(User)},1]}{min[\chi^2 \text{(Baseline)} / df \text{(Baseline)},1]-1}
 $$
-In the denominator we have a 1 since $\chi^2 \text{(Satureted)}=0$ and  $df \text{(Satureted)}=0$ implies that $min(\chi^2 \text{(Satureted)}/df\text{(Satureted)},1)=1$. Also, the TLI can be greater than 1 but for practical purposes we round it to 1. Given the eight-item one factor model:
+In the denominator we have a 1 since $\chi^2 \text{(Satureted)}=0$ and  $df \text{(Satureted)}=0$ implies that $min(\chi^2 \text{(Satureted)}/df\text{(Satureted)},1)=1$. Also, the TLI can be greater than 1 but for practical purposes we round it to 1. 
+
+Given the eight-item one factor model:
 
 $$
-TLI \, = \, \frac{4164.572/ 28-554.191 / 20}{4164.572 / 28-1} \, = \, 0.819
+TLI \, = \, \frac{4164.572/ 28-554.191 / 20}{4164.572 / 28-1} \, = \, \boxed{0.819}
 $$
-
 ### b) Absolute
 
 #### RMSEA 
@@ -1178,7 +1190,7 @@ RMSEA is the root mean square error of approximation.
 The root mean square error of approximation is an absolute measure of fit because it does not compare the discrepancy of the user model relative to a baseline model like the CFI or TLI. Instead, RMSEA defines $\delta$ as the non-centrality parameter which measures the **degree of misspecification**. Recall from the CFI that $\delta=\chi^2-df$ where $df$ is the degrees of freedom for that particular model. The greater the $\delta$ the more misspefied the model.
 
 $$
-RMSE = \sqrt{\frac{\delta}{df(n-1)}}
+\boxed{RMSE = \sqrt{\frac{\delta}{df(n-1)}}}
 $$
 where $n$ is the total number of observations. The cutoff criteria as defined in Kline (2016, p.274-275)
 

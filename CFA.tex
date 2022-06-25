@@ -1,0 +1,2920 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\title{CFA with R (\texttt{lavaan})}
+\author{Rafael Pentiado Poerschke}
+\date{24 Junho, 2022}
+
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  pdftitle={CFA with R (lavaan)},
+  pdfauthor={Rafael Pentiado Poerschke},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage[margin=1in]{geometry}
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\usepackage{graphicx}
+\makeatletter
+\def\maxwidth{\ifdim\Gin@nat@width>\linewidth\linewidth\else\Gin@nat@width\fi}
+\def\maxheight{\ifdim\Gin@nat@height>\textheight\textheight\else\Gin@nat@height\fi}
+\makeatother
+% Scale images if necessary, so that they will not overflow the page
+% margins by default, and it is still possible to overwrite the defaults
+% using explicit options in \includegraphics[width, height, ...]{}
+\setkeys{Gin}{width=\maxwidth,height=\maxheight,keepaspectratio}
+% Set default figure placement to htbp
+\makeatletter
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage{colortbl}
+\usepackage{pdflscape}
+\usepackage{tabu}
+\usepackage{threeparttable}
+\usepackage{threeparttablex}
+\usepackage[normalem]{ulem}
+\usepackage{makecell}
+\usepackage{xcolor}
+\ifLuaTeX
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\begin{document}
+\maketitle
+
+\hypertarget{lets-start-on-the-shop-floor}{%
+\section{Let's Start: On the Shop
+Floor}\label{lets-start-on-the-shop-floor}}
+
+\textbf{Loading the packages}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{library}\NormalTok{(lavaan)}
+\FunctionTok{library}\NormalTok{(semPlot)}
+\FunctionTok{library}\NormalTok{(dplyr)}
+\FunctionTok{library}\NormalTok{(knitr)}
+\FunctionTok{library}\NormalTok{(kableExtra)}
+\FunctionTok{library}\NormalTok{(rstatix)}
+\FunctionTok{library}\NormalTok{(foreign)}
+\FunctionTok{library}\NormalTok{(psych)}
+\FunctionTok{library}\NormalTok{(tinytex)}
+\end{Highlighting}
+\end{Shaded}
+
+\textbf{The \texttt{getwd()} returns an absolute filepath representing
+the current working directory of the R process;}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{getwd}\NormalTok{()}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] "/Users/rafaelpoerschke/GitHub/CFA_withR"
+\end{verbatim}
+
+\texttt{setwd("dir")} \textbf{is used to set the working directory.}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{setwd}\NormalTok{(}\StringTok{"/Users/rafaelpoerschke/dados/multivariada"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{data-set}{%
+\subsection{Data Set}\label{data-set}}
+
+\textbf{Assumptions}: Check the multivariate normality;
+multicolinearity; sample size and Positive Definiteness of cov-var
+matrix.
+
+Motivating example: Suppose you are a researcher studying the effects of
+student background on {academic achievement}. The dataset (worland5.csv)
+of 500 (\emph{n=500}) students each with 9 observed variables.
+
+\textbf{Observed Variables}:
+
+Motivation, Harmony, Stability, Negative Parental Psychology,
+Socioeconomic Status (SES), Verbal IQ, Reading, Arithmetic and Spelling.
+The principal investigator hypothesizes three
+
+\textbf{Latent Constructs}:
+
+Adjustment, Risk, Achievement measured with its corresponding to the
+following codebook mapping:
+
+\hypertarget{variables-set-1}{%
+\subsubsection{Variables set 1}\label{variables-set-1}}
+
+\textbf{1) Adjustment (Focus)}
+
+\begin{itemize}
+\item
+  motiv: Motivation
+\item
+  harm: Harmony
+\item
+  stabI: Stability
+\end{itemize}
+
+\textbf{2) Risk}
+
+\begin{itemize}
+\item
+  ppsych: (Negative) Parental Psychology
+\item
+  ses: SES
+\item
+  verbal: Verbal IQ
+\end{itemize}
+
+\textbf{3) Achievement}
+
+\begin{itemize}
+\item
+  read: Reading
+\item
+  arith: Arithmetic Skills
+\item
+  spell: Spelling
+\end{itemize}
+
+\hypertarget{variables-set-2}{%
+\subsubsection{Variables set 2}\label{variables-set-2}}
+
+SPSS Anxiety Questionnaire (SAQ). The first eight items consist of the
+following (2,571 answers):
+
+\begin{itemize}
+\tightlist
+\item
+  q1: Statistics makes me cry
+\item
+  q2: My friends will think I'm stupid for not being able to cope with
+  SPSS
+\item
+  q3: Standard deviations excite me
+\item
+  q4: I dream that Pearson is attacking me with correlation coefficients
+\item
+  q5: I don't understand statistics
+\item
+  q6: I have little experience with computers
+\item
+  q7: All computers hate me
+\item
+  q8: I have never been good at mathematics
+\end{itemize}
+
+\hypertarget{section}{%
+\subsection*{}\label{section}}
+\addcontentsline{toc}{subsection}{}
+
+You can load the file directly into R with the following command.
+
+\textbf{Loading the data:}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dat }\OtherTok{\textless{}{-}} \FunctionTok{read.csv}\NormalTok{(}\StringTok{"https://stats.idre.ucla.edu/wp{-}content/uploads/2021/02/worland5.csv"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Importing a datafile from SPSS arquive (we will use it latter)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dat1 }\OtherTok{\textless{}{-}} \FunctionTok{read.spss}\NormalTok{(}\StringTok{"https://stats.idre.ucla.edu/wp{-}content/uploads/2018/05/SAQ.sav"}\NormalTok{, }\AttributeTok{to.data.frame=}\ConstantTok{TRUE}\NormalTok{, }\AttributeTok{use.value.labels =} \ConstantTok{FALSE}\NormalTok{)}
+\CommentTok{\#save(dat1, file = "dat1.RData")}
+\end{Highlighting}
+\end{Shaded}
+
+The most essential component of a structural equation model is
+covariance or the statistical relationship between items. The true
+population covariance, denoted \(\mathbf{\Sigma}\), is called the
+variance-covariance matrix. Since we do not know \(\mathbf{\Sigma}\) we
+can estimate it with our sample \(\mathbf{\Sigma}(\theta)\), and call it
+\(\mathbf{S}\), or the sample variance-covariance matrix.
+
+The function \texttt{cov} specifies that we want to obtain the
+covariance matrix from the data.
+
+\begin{verbatim}
+**Question:** In this example, how the data are standardized, so if we try to extract the var-cov matrix, what we will have?
+\end{verbatim}
+
+\hypertarget{basics-metrics}{%
+\subsubsection{Basics metrics}\label{basics-metrics}}
+
+\hypertarget{covariance-variance-matrix}{%
+\paragraph{Covariance-Variance
+Matrix}\label{covariance-variance-matrix}}
+
+\textbf{Covariance-Variance Table set1}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{cov}\NormalTok{(dat)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        motiv harm stabi ppsych ses verbal read arith spell
+## motiv    100   77    59    -25  25     32   53    60    59
+## harm      77  100    58    -25  26     25   42    44    45
+## stabi     59   58   100    -16  18     27   36    38    38
+## ppsych   -25  -25   -16    100 -42    -40  -39   -24   -31
+## ses       25   26    18    -42 100     40   43    37    33
+## verbal    32   25    27    -40  40    100   56    49    48
+## read      53   42    36    -39  43     56  100    73    87
+## arith     60   44    38    -24  37     49   73   100    72
+## spell     59   45    38    -31  33     48   87    72   100
+\end{verbatim}
+
+\hypertarget{correlation-matrix}{%
+\paragraph{Correlation Matrix}\label{correlation-matrix}}
+
+\textbf{Correlation Table set1}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{round}\NormalTok{(}\FunctionTok{cov}\NormalTok{(dat[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{9}\NormalTok{]),}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        motiv harm stabi ppsych ses verbal read arith spell
+## motiv    100   77    59    -25  25     32   53    60    59
+## harm      77  100    58    -25  26     25   42    44    45
+## stabi     59   58   100    -16  18     27   36    38    38
+## ppsych   -25  -25   -16    100 -42    -40  -39   -24   -31
+## ses       25   26    18    -42 100     40   43    37    33
+## verbal    32   25    27    -40  40    100   56    49    48
+## read      53   42    36    -39  43     56  100    73    87
+## arith     60   44    38    -24  37     49   73   100    72
+## spell     59   45    38    -31  33     48   87    72   100
+\end{verbatim}
+
+\hypertarget{covariance-variance-matrix-set2}{%
+\paragraph{Covariance-Variance Matrix
+set2}\label{covariance-variance-matrix-set2}}
+
+\textbf{Covariance-Variance Table set2}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{round}\NormalTok{(}\FunctionTok{cov}\NormalTok{(dat1[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{]),}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       q01   q02   q03   q04   q05   q06   q07   q08
+## q01  0.69 -0.07 -0.30  0.34  0.32  0.20  0.28  0.24
+## q02 -0.07  0.72  0.29 -0.09 -0.10 -0.07 -0.15 -0.04
+## q03 -0.30  0.29  1.16 -0.39 -0.32 -0.27 -0.45 -0.24
+## q04  0.34 -0.09 -0.39  0.90  0.37  0.30  0.43  0.29
+## q05  0.32 -0.10 -0.32  0.37  0.93  0.28  0.36  0.23
+## q06  0.20 -0.07 -0.27  0.30  0.28  1.26  0.64  0.22
+## q07  0.28 -0.15 -0.45  0.43  0.36  0.64  1.22  0.29
+## q08  0.24 -0.04 -0.24  0.29  0.23  0.22  0.29  0.76
+\end{verbatim}
+
+\hypertarget{correlation-matrix-set2}{%
+\paragraph{Correlation Matrix set2}\label{correlation-matrix-set2}}
+
+\textbf{Correlation Table set2}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{round}\NormalTok{(}\FunctionTok{cor}\NormalTok{(dat1[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{]),}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       q01   q02   q03   q04   q05   q06   q07   q08
+## q01  1.00 -0.10 -0.34  0.44  0.40  0.22  0.31  0.33
+## q02 -0.10  1.00  0.32 -0.11 -0.12 -0.07 -0.16 -0.05
+## q03 -0.34  0.32  1.00 -0.38 -0.31 -0.23 -0.38 -0.26
+## q04  0.44 -0.11 -0.38  1.00  0.40  0.28  0.41  0.35
+## q05  0.40 -0.12 -0.31  0.40  1.00  0.26  0.34  0.27
+## q06  0.22 -0.07 -0.23  0.28  0.26  1.00  0.51  0.22
+## q07  0.31 -0.16 -0.38  0.41  0.34  0.51  1.00  0.30
+## q08  0.33 -0.05 -0.26  0.35  0.27  0.22  0.30  1.00
+\end{verbatim}
+
+\hypertarget{section-1}{%
+\subsubsection*{}\label{section-1}}
+\addcontentsline{toc}{subsubsection}{}
+
+The \texttt{kable} package allows fancier tables, what enable a clear
+visualization and navigation along it. Check it out!
+
+\textbf{Correlation Table}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{cor}\NormalTok{(dat[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{]),}\DecValTok{2}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =}\NormalTok{ F, }\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{, }\StringTok{"responsive"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}
+\centering
+\begin{tabular}{l|r|r|r|r|r|r|r|r}
+\hline
+  & motiv & harm & stabi & ppsych & ses & verbal & read & arith\\
+\hline
+motiv & 1.00 & 0.77 & 0.59 & -0.25 & 0.25 & 0.32 & 0.53 & 0.60\\
+\hline
+harm & 0.77 & 1.00 & 0.58 & -0.25 & 0.26 & 0.25 & 0.42 & 0.44\\
+\hline
+stabi & 0.59 & 0.58 & 1.00 & -0.16 & 0.18 & 0.27 & 0.36 & 0.38\\
+\hline
+ppsych & -0.25 & -0.25 & -0.16 & 1.00 & -0.42 & -0.40 & -0.39 & -0.24\\
+\hline
+ses & 0.25 & 0.26 & 0.18 & -0.42 & 1.00 & 0.40 & 0.43 & 0.37\\
+\hline
+verbal & 0.32 & 0.25 & 0.27 & -0.40 & 0.40 & 1.00 & 0.56 & 0.49\\
+\hline
+read & 0.53 & 0.42 & 0.36 & -0.39 & 0.43 & 0.56 & 1.00 & 0.73\\
+\hline
+arith & 0.60 & 0.44 & 0.38 & -0.24 & 0.37 & 0.49 & 0.73 & 1.00\\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Covariance-Variance Table}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{kable}\NormalTok{(}\FunctionTok{round}\NormalTok{(}\FunctionTok{cov}\NormalTok{(dat1[,}\DecValTok{3}\SpecialCharTok{:}\DecValTok{5}\NormalTok{]),}\DecValTok{2}\NormalTok{)) }\SpecialCharTok{\%\textgreater{}\%}
+  \FunctionTok{kable\_styling}\NormalTok{(}\AttributeTok{full\_width =}\NormalTok{ F, }\AttributeTok{bootstrap\_options =} \FunctionTok{c}\NormalTok{(}\StringTok{"striped"}\NormalTok{, }\StringTok{"hover"}\NormalTok{, }\StringTok{"condensed"}\NormalTok{, }\StringTok{"responsive"}\NormalTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{table}
+\centering
+\begin{tabular}{l|r|r|r}
+\hline
+  & q03 & q04 & q05\\
+\hline
+q03 & 1.16 & -0.39 & -0.32\\
+\hline
+q04 & -0.39 & 0.90 & 0.37\\
+\hline
+q05 & -0.32 & 0.37 & 0.93\\
+\hline
+\end{tabular}
+\end{table}
+
+\hypertarget{principal-components-analysis}{%
+\subsection{Principal Components
+Analysis}\label{principal-components-analysis}}
+
+In Principal Components Analysis - this and next subsection are based on
+Kent et al.~(1979)\footnote{ALAVI, M., VISENTIN, D. C., THAPA, D. K.,
+  HUNT, G. E., WATSON, R., \& CLEARY, M. L.. Chi-square for model fit in
+  confirmatory factor analysis.2020.}, and Johnson \& Wichern
+(2014)\footnote{JOHNSON, Richard Arnold; WICHERN, Dean W. Applied
+  multivariate statistical analysis. London, UK:: Pearson, 2014.}, we
+will find a \textbf{Y} matrix as a result of the transformation matrix
+\textbf{W}, what contais the eigenvectors in columns, over the
+variances-covariances matrix \textbf{X}.
+
+\[
+\underbrace{\mathbf{Y}}_{(p \times p)} \: = \quad
+\underbrace{\mathbf{W}^{T}}_{(p \times p)}
+\underbrace{\mathbf{X}}_{(p \times p)}\:
+\] The dataset (dat1) has 23 variables and 2571 observations, but we
+will focus just in the eight first questions. From it we can start to
+extract all necessary information. Let's start checking the Principal
+Components, first lets compute the eigenvalues and the eigenvectors.
+
+\textbf{\emph{Eigenvalues}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{R\_set2 }\OtherTok{\textless{}{-}} \FunctionTok{cor}\NormalTok{(dat1 [,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{])}
+\NormalTok{my.eigen }\OtherTok{=} \FunctionTok{eigen}\NormalTok{(R\_set2)}
+\FunctionTok{round}\NormalTok{(my.eigen}\SpecialCharTok{$}\NormalTok{values, }\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 3.057 1.067 0.958 0.736 0.622 0.571 0.543 0.446
+\end{verbatim}
+
+\textbf{\emph{Eigenvectors}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{round}\NormalTok{(my.eigen}\SpecialCharTok{$}\NormalTok{vectors,}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        [,1]   [,2]   [,3]   [,4]   [,5]   [,6]   [,7]   [,8]
+## [1,]  0.377 -0.132  0.406  0.187 -0.081  0.752 -0.240  0.102
+## [2,] -0.171 -0.839  0.026  0.108 -0.368 -0.224 -0.262 -0.002
+## [3,] -0.374 -0.396 -0.083  0.075  0.520  0.336  0.513  0.212
+## [4,]  0.412 -0.115  0.196  0.075 -0.366 -0.118  0.764 -0.205
+## [5,]  0.372 -0.093  0.219  0.536  0.562 -0.431 -0.125 -0.015
+## [6,]  0.327 -0.179 -0.690  0.036  0.135  0.233 -0.078 -0.553
+## [7,]  0.411 -0.043 -0.463 -0.007 -0.115 -0.068  0.034  0.772
+## [8,]  0.325 -0.258  0.226 -0.808  0.327 -0.111 -0.059 -0.018
+\end{verbatim}
+
+How we can see, the first two are the ones that have values greater than
+the unit. Let's check it out again:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{round}\NormalTok{(}\FunctionTok{eigen}\NormalTok{(R\_set2 [,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{])}\SpecialCharTok{$}\NormalTok{values, }\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 3.057 1.067 0.958 0.736 0.622 0.571 0.543 0.446
+\end{verbatim}
+
+Let's do the same with the computed eigenvectors.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{round}\NormalTok{(}\FunctionTok{eigen}\NormalTok{(R\_set2 [,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{])}\SpecialCharTok{$}\NormalTok{vectors, }\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        [,1]   [,2]   [,3]   [,4]   [,5]   [,6]   [,7]   [,8]
+## [1,]  0.377 -0.132  0.406  0.187 -0.081  0.752 -0.240  0.102
+## [2,] -0.171 -0.839  0.026  0.108 -0.368 -0.224 -0.262 -0.002
+## [3,] -0.374 -0.396 -0.083  0.075  0.520  0.336  0.513  0.212
+## [4,]  0.412 -0.115  0.196  0.075 -0.366 -0.118  0.764 -0.205
+## [5,]  0.372 -0.093  0.219  0.536  0.562 -0.431 -0.125 -0.015
+## [6,]  0.327 -0.179 -0.690  0.036  0.135  0.233 -0.078 -0.553
+## [7,]  0.411 -0.043 -0.463 -0.007 -0.115 -0.068  0.034  0.772
+## [8,]  0.325 -0.258  0.226 -0.808  0.327 -0.111 -0.059 -0.018
+\end{verbatim}
+
+Another way to extract the eigenvalues in R: The \texttt{prcomp(\ )}
+function produces an unrotated principal component analysis - it`s a
+native function. For now, we are not concerned if the PCs are or not
+rotated.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pca\_set2 }\OtherTok{\textless{}{-}} \FunctionTok{prcomp}\NormalTok{(dat1 [,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{],  }\AttributeTok{scale =} \ConstantTok{FALSE}\NormalTok{)  }\CommentTok{\#ira normalizar os dados com o TRUE}
+
+\FunctionTok{round}\NormalTok{(pca\_set2}\SpecialCharTok{$}\NormalTok{rotation, }\DecValTok{3}\NormalTok{) }\CommentTok{\#componentes criados}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        PC1    PC2    PC3    PC4    PC5    PC6    PC7    PC8
+## q01  0.276 -0.205  0.291 -0.019  0.118  0.027  0.155 -0.871
+## q02 -0.137  0.266  0.542  0.290 -0.146  0.667 -0.259  0.024
+## q03 -0.409  0.471  0.478 -0.186 -0.142 -0.521  0.225 -0.072
+## q04  0.371 -0.190  0.308  0.150 -0.160  0.074  0.734  0.373
+## q05  0.341 -0.188  0.387 -0.720 -0.017 -0.007 -0.356  0.231
+## q06  0.419  0.701 -0.142 -0.137  0.502  0.145  0.141  0.021
+## q07  0.492  0.306 -0.161  0.154 -0.720 -0.194 -0.214 -0.115
+## q08  0.256 -0.094  0.321  0.545  0.385 -0.469 -0.357  0.173
+\end{verbatim}
+
+\hypertarget{factor-analysis}{%
+\subsection{Factor Analysis}\label{factor-analysis}}
+
+We can apply a complementary technique, i.e.~Factor Analysis. Note that
+the \textbf{X} matrix is now on the left side, and \textbf{L} is the
+matrix of factor loadings.
+
+\[
+\mathbf{X}_{p \times 1} \: = \:
+\mu_{p \times 1} + \:
+\mathbf {L}_{p \times m}\:\mathbf {F}_{m \times 1}\: + \:
+\epsilon_{p \times 1}
+\] O modelo acima postula que a variação das variáveis observadas são
+dependentes de algumas variáveis aleatórias não observáveis e estimáveis
+\(F_{1},\: F_{2},\: \ldots, \:F_{q}\), chamadas de
+\textit{fatores comuns}, com um adicional de ``\(p\)'' fontes de
+variações
+\(\varepsilon_{1},\:\varepsilon_{2},\: \ldots, \:\varepsilon_{p}\),
+chamados de \textit{fatores específicos} ou \textit{únicos} -- essa
+denominação faz referência a sua associação única com cada variável.
+
+Agora, escrevemos que cada variável tem uma carga associada aos pesos da
+matriz quadrada \(\;\mathbf{W}_{(p \times p)}\) , que no caso da análise
+fatorial pode ter ``\(\;m\;\)'' fatores, com ``\(m \leq p\);'' e
+doravante denotada por \(\mathbf{L}_{(p \times m)}\). \[
+\hat{\mathbf{\Sigma}}\,=\, \underbrace{\hat{\mathbf{\Lambda}}_{x}  \hat{\mathbf{\Lambda}}^{\prime}_{x}}_{\text{communality}} \; + \; \underbrace{\hat{\mathbf{\Psi}}_{\varepsilon}}_{\text{uniqueness}}
+\]
+
+Where \(\mathbf{\Lambda_{p \times k}}\) is the matrix \textbf{loadings},
+and \(\mathbf{\Psi}\) is a diagonal matrix of unique variances of
+observed variables.
+
+The variability in our data, \(\mathbf{X}\), is given by
+\(\mathbf{\Sigma}\), and its estimate \(\mathbf{\hat{\Sigma}}\) is
+composed of the variability explained by the factors explained be a
+linear combination of the factors (\textbf{communality}) and of the
+variability, which can not be explained by a linear combination of the
+factors (\textbf{uniqueness}).
+
+Let's check it out using \texttt{Psych} package. We have computed the
+eigenvalues, so we know the we need two of them (\texttt{dat1}), I mean,
+we need computed just the first two factors and apply an orthogonal
+rotation on it.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fit }\OtherTok{\textless{}{-}} \FunctionTok{fa}\NormalTok{(}\AttributeTok{r =}\NormalTok{ R\_set2, }\AttributeTok{nfactors =} \DecValTok{2}\NormalTok{, }\AttributeTok{fm =} \StringTok{"ml"}\NormalTok{, }\AttributeTok{rotate =} \StringTok{"Varimax"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Loading required namespace: GPArotation
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loads }\OtherTok{\textless{}{-}}\NormalTok{ fit}\SpecialCharTok{$}\NormalTok{loadings[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{2}\NormalTok{]}
+\NormalTok{loads}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##            ML1        ML2
+## q01  0.2118908  0.6244710
+## q02 -0.1421882 -0.1684692
+## q03 -0.3280858 -0.4497037
+## q04  0.3300947  0.5939122
+## q05  0.2692136  0.5257771
+## q06  0.5200163  0.1808952
+## q07  0.9265564  0.1729263
+## q08  0.2421117  0.4271415
+\end{verbatim}
+
+The Factor number 1 is correlated with questions 06 and 07, so we can
+call it as the factor that measures the \textbf{Computer Knowledge}. On
+the other hand, Factor 2 are strongly associated ( \(>\) 0.5) with q01,
+q04 and q05, and it measures the \textbf{statistics Knowledge}.
+
+Remember tha the \textbf{loadings}, range from −1 to 1. This is the
+\(\mathbf{\hat{\Lambda}}\)in the equation above. The loadings are the
+contribution of each original variable to the factor. Variables with a
+high loading are well explained by the factor.
+
+By squaring the loading we compute the fraction of the variable's total
+variance explained by the factor. This proportion of the variability is
+denoted as \textbf{communality}. Another way to calculate the
+communality is to subtract the uniquenesses from 1.
+
+\textbf{\emph{Communalities}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{commu\_dat1 }\OtherTok{\textless{}{-}}\NormalTok{ fit}\SpecialCharTok{$}\NormalTok{communality[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{]}
+\NormalTok{commu\_dat1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##        q01        q02        q03        q04        q05        q06        q07 
+## 0.43486175 0.04859935 0.30987365 0.46169422 0.34891751 0.30314006 0.88841020 
+##        q08 
+## 0.24106799
+\end{verbatim}
+
+We can sum it, but why? It gives you the total (common) variance
+explained.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{soma\_dat1 }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(commu\_dat1)}
+\NormalTok{soma\_dat1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 3.036565
+\end{verbatim}
+
+Than computing the uniquenesses
+
+\textbf{\emph{Uniquenesses}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{uniq\_dat1 }\OtherTok{\textless{}{-}}\NormalTok{ fit}\SpecialCharTok{$}\NormalTok{uniquenesses[}\DecValTok{1}\SpecialCharTok{:}\DecValTok{8}\NormalTok{]}
+\NormalTok{uniq\_dat1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       q01       q02       q03       q04       q05       q06       q07       q08 
+## 0.5651382 0.9514006 0.6901263 0.5383058 0.6510825 0.6968599 0.1115898 0.7589320
+\end{verbatim}
+
+The first chunk provides the \textbf{uniquenesses}, which range from 0
+to 1. The uniqueness, sometimes referred to as \emph{noise}, corresponds
+to the proportion of variability, which \underline{can not be explained}
+by a linear combination of the factors. This is the \(\hat{\Psi}\) in
+the equation above.
+
+So we can sum it
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{soma\_unique\_dat1 }\OtherTok{\textless{}{-}} \FunctionTok{sum}\NormalTok{(uniq\_dat1)}
+\NormalTok{soma\_unique\_dat1}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 4.963435
+\end{verbatim}
+
+\textbf{NOTE}:
+
+How many tests are we able to operate in EFA? May just check if the
+chosen number of factors are enough to explain the original variance.
+May we are able to choose a rotate method or estimators.
+
+Joreskog (1969)\footnote{JÖRESKOG, K. G. A general approach to
+  confirmatory maximum likelihood factor analysis. Psychometrika, 34(2),
+  183--202. 1969. \url{doi:10.1007/bf02289343}} proposed that a factor
+hypothesis could be tested by imposing restrictions on the EFA model ---
+fixed elements in \(\mathbf{\Lambda}\), \(\mathbf{\Psi}\), usually 0.
+Needs more than \(k^2\) restrictions. The ML solution is then found for
+the remaining free parameters.
+
+The \(\chi^2\) for the restricted solution gives a test for how well the
+hypothesized factor structure fits.
+
+\hypertarget{confirmatory-factor-analysis-cfa}{%
+\section{CONFIRMATORY FACTOR ANALYSIS
+(CFA)}\label{confirmatory-factor-analysis-cfa}}
+
+All this section is based on Bollen (1989)\footnote{BOLLEN, Kenneth A.
+  Structural equations with latent variables. John Wiley \& Sons, 1989.},
+Beaujeab (2014)\footnote{BEAUJEAN, A. Alexander. Latent variable
+  modeling using R: A step-by-step guide. Routledge, 2014.},
+Brown(2015)\footnote{BROWN, Timothy A. Confirmatory factor analysis for
+  applied research. Guilford publications, 2015.}, and Finch \& French
+(2015)\footnote{FINCH, W. Holmes; FRENCH, Brian F. Latent variable
+  modeling with R. Routledge, 2015.}.
+
+Most social scientific concepts are not directly observable,
+e.g.~intelligence, social capital, modernization. It makes them
+\textbf{hypothetical} or \textbf{latent} constructs. We can measure
+latent variables using \textbf{observable indicators}.
+
+\textbf{The main objective} here is build a measurement model (data)
+that has behind it a Structural Model (theory) and check if they match.
+
+\hypertarget{definitions}{%
+\subsection{Definitions}\label{definitions}}
+
+Variables Relationships in a Path Model
+
+\begin{itemize}
+\item
+  \textbf{Observed variable}: a variable that exists in the data, a.k.a
+  item or manifest variable.
+\item
+  \textbf{Latent variable}: a variable that is constructed and does not
+  exist in the data.
+\item
+  \textbf{Exogenous variable}: an independent variable either observed
+  (x) or latent (\(\xi\)) that explains an endogenous variable. With no
+  direct cause (independent variables).
+\item
+  \textbf{Endogenous variable}: a dependent variable, either observed
+  (y) or latent (\(\eta\)) that has a causal path leading to it.
+\item
+  \textbf{Measurement model}: a model that links observed variables with
+  latent variables.
+\item
+  \textbf{Indicator}: an observed variable in a measurement model (can
+  be \emph{exogenous} or \emph{endogenous}).
+\item
+  \textbf{Factor}: a latent variable defined by its indicators (can be
+  \emph{exogenous} or \emph{endogenous}).
+\item
+  \textbf{Loading}: a path between an indicator and a factor.
+\item
+  \textbf{Structural model}: a model that specifies causal relationships
+  among exogenous variables to endogenous variables (can be observed or
+  latent)
+\item
+  \textbf{Regression Path}: a path between exogenous and endogenous
+  variables (can be observed or latent).
+\end{itemize}
+
+There is \textbf{subtlety} to the definition of an indicator. Although
+variables are typically seen as independent variables in a linear
+regression, the \(x\) or \(y\) label of an indicator in a measurement
+model depends on the factor it belongs to. An indicator is an \(x\)-side
+indicator if it depends on an \emph{exogenous factor}(this is our case)
+and a \(y\)-side indicator if it depends on an \emph{endogenous factor}.
+
+\hypertarget{the-lavaan-model-sintax}{%
+\subsection{The Lavaan Model Sintax}\label{the-lavaan-model-sintax}}
+
+\hypertarget{regression-model}{%
+\subsubsection{Regression Model}\label{regression-model}}
+
+Regress onto: regression operator is (\texttt{\textasciitilde{}}), used
+for regression of observed outcome to observed predictors It has the
+following form:
+
+\hypertarget{model-description}{%
+\paragraph{Model Description}\label{model-description}}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{myModels }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{()}
+\NormalTok{fits }\OtherTok{\textless{}{-}} \FunctionTok{list}\NormalTok{()}
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{Reg }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}}
+\StringTok{\#Reg}
+\StringTok{motiv \textasciitilde{} ses+stabi+arith}
+\StringTok{\textquotesingle{}}
+\end{Highlighting}
+\end{Shaded}
+
+\hypertarget{diagram-for-a-regression-model}{%
+\paragraph{Diagram for a Regression
+Model}\label{diagram-for-a-regression-model}}
+
+\includegraphics{CFA_files/figure-latex/regressionh-1.pdf}
+
+\hypertarget{section-2}{%
+\subsubsection*{}\label{section-2}}
+\addcontentsline{toc}{subsubsection}{}
+
+(\texttt{\textasciitilde{}1}) intercept or mean (e.g.,
+\texttt{q01\ \textasciitilde{}\ 1} estimates the mean of variable q01)
+
+\hypertarget{latent-variable-definition}{%
+\subsubsection{Latent variable
+definition}\label{latent-variable-definition}}
+
+(\texttt{=\textasciitilde{}}) indicator, used for latent variable to
+observed indicator in factor analysis measurement models =
+(\texttt{f\ =\textasciitilde{}\ y1+y2}) The factor causes the items.
+
+We define them by listing their manifest variables
+
+\begin{itemize}
+\item
+  \textbf{Reflective} latent variable (\texttt{=\textasciitilde{}})
+\item
+  \begin{itemize}
+  \tightlist
+  \item
+    \emph{Reflective}: All items measure the same construct. Direction
+    of causality is from construct to measure (indicators), which means
+    items are manifested by the construct. If interchangeable, and to a
+    certain extent, it can even be removed. Measures expected to be
+    correlated.
+  \end{itemize}
+\item
+  \begin{itemize}
+  \item
+    \begin{itemize}
+    \tightlist
+    \item
+      \textbf{Diet}: (R1) I eat healthy food; (R2) I do not each much
+      junk food; (R3) I have balanced Diet
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{Reflex }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}}
+\StringTok{\#reflectiveconstruct}
+\StringTok{pcknow =\textasciitilde{} q06 + q07}
+\StringTok{\textquotesingle{}}
+
+\NormalTok{fits}\SpecialCharTok{$}\NormalTok{Reflex }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{Reflex, }\AttributeTok{data =}\NormalTok{ dat1, }\AttributeTok{std.lv=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in lav_model_vcov(lavmodel = lavmodel, lavsamplestats = lavsamplestats, : lavaan WARNING:
+##     Could not compute standard errors! The information matrix could
+##     not be inverted. This may be a symptom that the model is not
+##     identified.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{semPaths}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Reflex, }\AttributeTok{whatLabels =} \StringTok{"est"}\NormalTok{, }\AttributeTok{intercepts =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{edge.label.cex =} \FloatTok{0.9}\NormalTok{, }\AttributeTok{edge.labels=}\StringTok{"both"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{CFA_files/figure-latex/reflex1-1.pdf} If q6 and q7
+could covariate, we would have
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{Reflex }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}}
+\StringTok{\#reflectiveconstruct}
+\StringTok{pcknow =\textasciitilde{} q06 + q07}
+
+\StringTok{\#covarianve}
+\StringTok{q06 \textasciitilde{}\textasciitilde{} q07}
+\StringTok{\textquotesingle{}}
+\NormalTok{fits}\SpecialCharTok{$}\NormalTok{Reflex }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{Reflex, }\AttributeTok{data =}\NormalTok{ dat1, }\AttributeTok{std.lv=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in lav_model_vcov(lavmodel = lavmodel, lavsamplestats = lavsamplestats, : lavaan WARNING:
+##     Could not compute standard errors! The information matrix could
+##     not be inverted. This may be a symptom that the model is not
+##     identified.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{semPaths}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Reflex, }\AttributeTok{whatLabels =} \StringTok{"est"}\NormalTok{, }\AttributeTok{intercepts =} \ConstantTok{FALSE}\NormalTok{, }\AttributeTok{edge.label.cex =} \FloatTok{0.9}\NormalTok{, }\AttributeTok{edge.labels=}\StringTok{"both"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{CFA_files/figure-latex/Reflex1cov-1.pdf}
+
+\begin{itemize}
+\item
+  \textbf{Formative} latent variable
+  (\texttt{\textless{}\textasciitilde{}})
+\item
+  \begin{itemize}
+  \tightlist
+  \item
+    \emph{Formative}: Direction of causality is from \textbf{measure} to
+    \textbf{construct}. The latent variable is considered a consequence
+    of its respective indicators. Correlation not requires and
+    indicators are not interchangeable, replacing a formative indicator
+    will alter the meaning of the latent variable:
+  \end{itemize}
+\item
+  \begin{itemize}
+  \item
+    \begin{itemize}
+    \tightlist
+    \item
+      \textbf{Health}: (F1) I have a balanced diet; (F2) I exercise
+      regularly (F3); I get sufficient sleep each night.
+    \end{itemize}
+  \end{itemize}
+\end{itemize}
+
+\hypertarget{other-usefull-stuff}{%
+\subsubsection{Other usefull stuff}\label{other-usefull-stuff}}
+
+\begin{itemize}
+\item
+  (co)variance (\texttt{\textasciitilde{}\textasciitilde{}}):
+  \texttt{x\textasciitilde{}\textasciitilde{}y}
+\item
+  Intercept (\texttt{\textasciitilde{}1}):
+  \texttt{x\ \textasciitilde{}\ 1} estimates the mean of \(x\)
+\item
+  (\texttt{1*}) fixes parameter or loading to one:
+  \texttt{f\ =\textasciitilde{}1*q}
+\item
+  (\texttt{NA*}) frees parameter or loading (useful to override default
+  marker method): \texttt{f\ =\textasciitilde{}NA*q}
+\item
+  (\texttt{a*}) labels the parameter `a', used for model constraints
+\end{itemize}
+
+\hypertarget{especification-a-complete-model-description}{%
+\subsection{Especification: A Complete Model
+Description}\label{especification-a-complete-model-description}}
+
+\begin{verbatim}
+          > myModel <- `#regressions
+          y1 ~ f1 + f2
+          f1 ~ f2 + x3
+          
+          #latent variables definition
+          f1 =~ x1 + x2 + x3
+          f2 =~ x4 + x4
+          
+          #variances and covariances
+          y1 ~~ y1
+          y1 ~~ y2
+          f1 ~~ f2
+          
+          #intercept
+          y1 ~ 1`
+\end{verbatim}
+
+We use Exploratory (EFA) when we have many variables and we have no idea
+how the items related with each other. In EFA each variable loads on all
+factors, and the number of latent variables are not determined before
+the analysis. The factors are assumed to be uncorrelated (Can use an
+oblique rotation to allow correlated factors).
+
+\textbf{EFA has a limitation}, because the only true statistical tests
+in EFA are tests for the number of common factors (when estimated by
+ML). But CFA if you already have an hypothesis, the number of latent
+variables are set by the analyst and some effects of latent variables on
+observed variables are fixed to zero or some other constant.
+
+In CFA you want to test your h0 so how well the sample can replicates
+covariance structure oh something knowing. Method for testing hypotheses
+about relationships among observed variables. Does this by imposing
+restrictions on an EFA model.
+
+Quest!
+
+\begin{itemize}
+\tightlist
+\item
+  Question: Do the variables have a given factor structure?
+\item
+  Question: How to compare competing models?
+\end{itemize}
+
+For EFA models, we start with the idea that each variable can be
+expressed as a regression on the common factors. For four variables, and
+one factor, \(\xi\) (Csi), the model is
+
+\[\begin{align} 
+X_{1}=\lambda_{1}\xi+\varepsilon_{1}\\ 
+X_{2}=\lambda_{2}\xi+\varepsilon_{2}\\
+X_{3}=\lambda_{3}\xi+\varepsilon_{3}\\ 
+X_{4}=\lambda_{4}\xi+\varepsilon_{4}
+\end{align}\]
+
+and the \textbf{common factors} account for correlations among \(x's\).
+The \(\varepsilon_{i}\) are the errors terms, or \textbf{unique
+factors}.
+
+For \(m\) factors, the common model model is
+
+\[\begin{align} 
+X_{1}=\lambda_{11}\xi_{1}+\lambda_{12}\xi_{2}+&\ldots+\lambda_{1m}\xi_{m}+\varepsilon_{1}\\ 
+X_{2}=\lambda_{21}\xi_{1}+\lambda_{22}\xi_{2}+&\ldots+\lambda_{2m}\xi_{m}+\varepsilon_{2}\\
+&\vdots\\
+X_{p}=\lambda_{p1}\xi_{1}+\lambda_{p2}\xi_{2}+&\ldots+\lambda_{pm}\xi_{m}+\varepsilon_{p}
+\end{align}\]
+
+The \(\lambda\)'s are referred to as the \textbf{loadings}, because they
+indicate which variable ``loads'' on which factor. This is a EFA model
+with \emph{m}-factors and \emph{p}-observed variables.
+
+Lets remember our model from \texttt{dat1} that one we found two factors
+in eight questions.
+
+\begin{itemize}
+\item
+  The Factor number 1 (\(\xi_{1}\)) is correlated with question 06 and
+  questions 07, so we called it of \textbf{Computer Knowledge} factor.
+\item
+  On the other hand, Factor 2 (\(\xi_{2}\)), strongly correlated with
+  question 01, 04 and 05, and it measures the \textbf{Statistics
+  Knowledge}. Knowing \emph{a priori} we may able to estimate the model
+  as
+\end{itemize}
+
+\[
+\begin{align}
+X_{6}=&\lambda_{61}\xi_{1}+\varepsilon_{6}\\ 
+X_{7}=&\lambda_{71}\xi_{1}+\varepsilon_{7}\\
+X_{1}=& &\lambda_{12}\xi_{2}+\varepsilon_{1}\\ 
+X_{4}=& &\lambda_{42}\xi_{2}+\varepsilon_{4}\\
+X_{5}=& &\lambda_{52}\xi_{2}+\varepsilon_{5}
+\end{align}
+\]
+
+The equation (1) represents this relation
+
+\[
+\mathbf{X}\,=\,\mathbf{\Lambda}_{x}\mathbf{\Xi}\,+\,\varepsilon \tag{1}
+\]
+
+\[
+\begin{bmatrix}
+X_{6}\\
+X_{7}\\
+X_{1}\\
+X_{4}\\
+X_{5}
+\end{bmatrix}
+=
+\begin{bmatrix}
+\lambda_{61} & 0 \\
+\lambda_{71} & 0 \\
+0 & \lambda_{12} \\
+0 & \lambda_{42} \\
+0 & \lambda_{52} \\\\
+\end{bmatrix}
+.
+\begin{bmatrix}
+\xi_{1}\\
+\xi_{2}\\
+\end{bmatrix}
++
+\begin{bmatrix}
+\varepsilon_{6}\\
+\varepsilon_{7}\\
+\varepsilon_{1}\\
+\varepsilon_{4}\\
+\varepsilon_{5}
+\end{bmatrix}
+\] Each column of \(\Lambda_{x}\) corresponds to one \textbf{latent
+variable}; the first column to \(\xi_{1}\), and the second to
+\(\xi_{2}\). The double subscript of \(\lambda_{ij}\) indicates the row
+and column position in \(\mathbf{\Lambda}_{x}\).
+
+A zero in \(\mathbf{\Lambda}_{x}\) indicates that the corresponding
+observed variable is not influenced by latent variable in that column.
+As EFA, \(\lambda_{ij}\) describes the direct structural relation
+between a latent and observed variable - may be view as regression
+coefficients. Like in regression, the coefficient \(\lambda_{ij}\)
+represents the number of units \(x_{i}\) is expected to change for a
+one-unit change in \(\xi_{j}\).
+
+Before estimation, it is necessary to understand the relation of the
+covariance matrix of observed variables to the structural parameters of
+the model.
+
+\hypertarget{diagram-for-a-reflective-model}{%
+\subsubsection{Diagram for a Reflective
+Model}\label{diagram-for-a-reflective-model}}
+
+When we applied the rotation in EFA, usually the option is for an
+orthogonal process. In that way we are looking for extract the maximum
+of the information inside the factors. This option could be applied in
+Lavaan:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{Late }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}}
+\StringTok{\#Reg}
+\StringTok{pcknow =\textasciitilde{} q06 + q07}
+\StringTok{statknow =\textasciitilde{} q01 + q04 + q05}
+
+\StringTok{\#variances and covariances}
+\StringTok{              pcknow \textasciitilde{}\textasciitilde{} 0*statknow}
+\StringTok{              q06 \textasciitilde{}\textasciitilde{} q07}
+\StringTok{              q01 \textasciitilde{}\textasciitilde{} q04}
+\StringTok{              q01 \textasciitilde{}\textasciitilde{} q05}
+\StringTok{              q04 \textasciitilde{}\textasciitilde{} q05}
+\StringTok{              }
+\StringTok{\textquotesingle{}}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{CFA_files/figure-latex/factors not covariate-1.pdf}
+But, think about these two latent variables, do they have any relation
+to each other? If you thought YES, we need to compute that information.
+
+\includegraphics{CFA_files/figure-latex/factors covariate-1.pdf}
+
+\hypertarget{model-implied-covariance}{%
+\subsection{Model Implied Covariance}\label{model-implied-covariance}}
+
+Historically, EFA is used to answer the question, how much common
+variance is shared among the items. This variance-covariance matrix can
+be described using the \textbf{model-implied covariance matrix}
+\(\mathbf{\Sigma}(\Theta)\). Note that this is in contrast to the
+observed population covariance matrix \(\mathbf{\Sigma}\) which comes
+only from the data. The formula for the model-implied covariance matrix
+is:
+
+Model Implied Covariance (model) versus Covariance (data)
+
+\[
+\underbrace{\mathbf{\Sigma}(\theta)=\mathbf{\Lambda}_{x} \mathbf{\Phi} \mathbf{\Lambda^{\prime}}_{x} \; + \; \mathbf{\Theta}_{\varepsilon}}_{\mathbf{Model}}
+\; \; versus \; \; \underbrace{\mathbf{\Sigma}}_{\mathbf{Pop.}} \; \; versus \; \; \underbrace{\mathbf{S}=\hat{\mathbf{\Sigma}}}_{\mathbf{Sample \, Est.}}
+\]
+
+\begin{itemize}
+\item
+  \(\mathbf{\Lambda}_{x}\) \textbf{factor loading} matrix is
+  \(p \times q\) (consisting of the same \(\lambda\)'s from the
+  measurement model);
+\item
+  \(\mathbf{\Phi}\) variance-convariance of the latent factors has
+  \((q)(q+1)/2\) nonredudante parameters; and
+\item
+  \(\mathbf{\Theta}_{\varepsilon}\) variance-covariance of the
+  residuals, has \((p)(p+1)/2\) unique parameters.
+\end{itemize}
+
+Remember equation (1), so we will have
+
+\[
+\mathbf{\Lambda_{x}}
+=
+\begin{bmatrix}
+\lambda_{61} & 0 \\
+\lambda_{71} & 0 \\
+0 & \lambda_{12} \\
+0 & \lambda_{42} \\
+0 & \lambda_{52} \\\\
+\end{bmatrix}
+; \quad
+\mathbf{\Phi}
+\begin{bmatrix}
+\phi_{11} & \\
+\phi_{21} & \phi_{22}\\
+\end{bmatrix}
+\\
+\mathbf{\Theta}_{\varepsilon}=
+\begin{bmatrix}
+Var(\varepsilon_{6}) & & & &\\
+0 & Var(\varepsilon_{7}) & \\
+0 & 0 & Var(\varepsilon_{1})& \\
+0 & 0 & 0 & Var(\varepsilon_{4})\\
+0 & 0 & 0 & 0 & Var(\varepsilon_{5})
+\end{bmatrix}
+\\
+\mathbf{\Sigma(\theta)}=
+\begin{bmatrix}
+\lambda^{2}_{61}\phi_{11}+Var(\varepsilon_{6}) & & & &\\
+\lambda_{71}\lambda_{61}\phi_{11} & \lambda^{2}_{71}\phi_{11}+Var(\varepsilon_{7}) & \\
+\lambda_{12}\lambda_{61}\phi_{12} & \lambda_{12}\lambda_{71}\phi_{12} & \lambda^{2}_{12}\phi_{22}+Var(\varepsilon_{1}) & \\
+\lambda_{42}\lambda_{61}\phi_{12} & \lambda_{42}\lambda_{71}\phi_{12} & \lambda_{42}\lambda_{12}\phi_{22} & \lambda^{2}_{42}\phi_{22}+Var(\varepsilon_{4})\\
+\lambda_{52}\lambda_{61}\phi_{12} & \lambda_{52}\lambda_{71}\phi_{12} & \lambda_{52}\lambda_{12}\phi_{22} & \lambda_{52}\lambda_{42}\phi_{22} & \lambda^{2}_{52}\phi_{22}+Var(\varepsilon_{5})
+\end{bmatrix}
+\] For instance, Var(q6) is
+\(\lambda^{2}_{61}\phi_{11}+Var(\varepsilon_{6})\). So, the variance of
+question 6 indicator depends on \(\lambda_{61}\), the coefficient
+linking it to \textbf{Computer Knowledge} (\(\xi_{1}\)), the variance
+(\(\phi_{11}\)) of this latent variable, and the measurement error
+variance (\(Var(\varepsilon_{6})\)) of the question 6.
+
+Quest!
+
+Do you think is feasible q6 and q7 covariate with each other?
+
+\[
+\mathbf{\Theta}_{\varepsilon}=
+\begin{bmatrix}
+Var(\varepsilon_{6}) & & & &\\
+Cov(\varepsilon_{6},\varepsilon_{7}) & Var(\varepsilon_{7}) & \\
+0 & 0 & Var(\varepsilon_{1})& \\
+0 & 0 & Cov(\varepsilon_{1},\varepsilon_{4})  & Var(\varepsilon_{4})\\
+0 & 0 & Cov(\varepsilon_{1},\varepsilon_{5})  & Cov(\varepsilon_{4},\varepsilon_{5})  & Var(\varepsilon_{5})
+\end{bmatrix}
+\] So, the \(Cov(q1,q5)\) is
+\(\lambda_{12} \lambda_{52}\phi_{22}+Cov(\varepsilon_{1},\varepsilon_{5})\).
+
+Quest!
+
+Why \(\mathbf{\Theta}_{\varepsilon}\) has \(\frac{(p)(p+1)}{2}\)
+elements?
+
+\hypertarget{mathematics-appendix}{%
+\subsubsection{Mathematics appendix}\label{mathematics-appendix}}
+
+Some assumptions of the factor analysis model
+
+\begin{itemize}
+\item
+  mean of the intercepts is zero \(E(\tau)=0\);
+\item
+  mean of the factor is zero \(E(\eta)=0\);
+\item
+  mean of the residual is zero \(E(\epsilon)=0\);
+\item
+  covariance of the factor with the residual os zero
+  \(Cov(\eta,\epsilon)=0\).
+\end{itemize}
+
+\textbf{Expectation}
+
+\[
+\begin{align}
+\mu_{y} \, = \, E(\mathbf{y})\, & = \,E(\tau+\mathbf{\Lambda\eta}+\epsilon)\\
+& =E(\tau)+E(\mathbf{\Lambda\eta})+E(\epsilon)\\
+& =0+E(\mathbf{\Lambda\eta})+0\\
+& =E(\mathbf{\Lambda\eta})\\
+& =\mathbf{\Lambda}E(\eta)\\
+& =\mathbf{\Lambda}\eta
+\end{align}
+\] \textbf{Covariance Structure}
+
+\[
+\begin{align}
+\mathbf{\Sigma}_{\theta} \, = \, Cov(\mathbf{y})\, & = \,E(\tau+\mathbf{\Lambda\eta}+\epsilon)\\
+& =Var(\tau)+Var(\mathbf{\Lambda\eta})+Var(\epsilon)\\
+& =0+Var(\mathbf{\Lambda\eta})+Var(\epsilon)\\
+& =Var(\mathbf{\Lambda\eta})+Var(\epsilon)\\
+& =\mathbf{\Lambda}Var(\eta)\mathbf{\Lambda}^{\prime}+Var(\epsilon)\\
+& =\mathbf{\Lambda\Psi}\mathbf{\Lambda}^{\prime}+\mathbf{\Theta}_{\epsilon}
+\end{align}
+\]
+
+This is true due to the assumptions we made above and properties of
+covariance, such as the fact that the variance of a constant is zero and
+\(Cov(\mathbf{AB})\mathbf{A}=\mathbf{A}Cov(\mathbf{B})\mathbf{A}^{\prime}\).
+We have defined new matrices where \(Cov(\mathbf{\eta})=\mathbf{\Psi}\)
+is the variance-covariance matrix of the factors \(\eta\) and
+\(Var(\epsilon)=\mathbf{\Theta}_{\epsilon}\) is the variance of the
+residuals.
+
+Theorem
+
+Let \(x \in \mathbb{R}^{p \times 1}\) be random (column) vector with
+covariance matrix \(\mathbf{\Sigma} \in \mathbb{R}^{p \times p}\). Let
+\(y = \mathbf{A}x\), where \(\mathbf{A} \in \mathbb{R}^{n \times p}\)
+and \(y \in \mathbb{R}^{n \times 1}\). Consider
+\(\mathbf{\Sigma} \equiv Cov(\mathbf{X})=E[(x-E[x])(x-E[x])^{\prime}]\).
+
+The theorem says that
+
+\[
+  Cov(\mathbf{A}x)=\mathbf{A}\Sigma\mathbf{A}^{\prime}.
+  \] Proof:
+
+\[
+\begin{align}
+Cov(y) \, = \, Cov(\mathbf{A}x)\, & = \,E[(\mathbf{A}x-E[\mathbf{A}x])(\mathbf{A}x-E[\mathbf{A}x])^{\prime}]\\
+& =\,E[(\mathbf{A}x-\mathbf{A}E[x])(\mathbf{A}x-\mathbf{A}E[x])^{\prime}]\\
+& =\,E[\mathbf{A}(x-E[x])(x-E[x])\mathbf{A}^{\prime}]\\
+& =\,\mathbf{A}E[(x-E[x])(x-E[x])^{\prime}]\mathbf{A}^{\prime}\\
+& =\,\mathbf{A}\mathbf{\Sigma}\mathbf{A}^{\prime}\\
+& & \blacksquare
+\end{align}
+\]
+
+\hypertarget{a-path-model-pictorial-representation-diagram}{%
+\subsection{A Path Model: pictorial representation
+(diagram)}\label{a-path-model-pictorial-representation-diagram}}
+
+\textbf{Defined Model}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#one factor three items, default marker method}
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{m1a  }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{} f  =\textasciitilde{} stabi + ppsych + ses\textquotesingle{}}   
+\end{Highlighting}
+\end{Shaded}
+
+Running model Raw data
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{onefac3items\_a }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{m1a, }\AttributeTok{data=}\NormalTok{dat) }
+\FunctionTok{summary}\NormalTok{(onefac3items\_a)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 49 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                         6
+##                                                       
+##   Number of observations                           500
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                 0.000
+##   Degrees of freedom                                 0
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   f =~                                                
+##     stabi             1.000                           
+##     ppsych           -2.333    0.593   -3.934    0.000
+##     ses               2.625    0.737    3.564    0.000
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##    .stabi            92.957    6.188   15.021    0.000
+##    .ppsych           62.541   11.236    5.566    0.000
+##    .ses              52.644   13.721    3.837    0.000
+##     f                 6.843    3.001    2.280    0.023
+\end{verbatim}
+
+or covs (input n)
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{example.cov }\OtherTok{\textless{}{-}} \FunctionTok{cov}\NormalTok{(dat1[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{9}\NormalTok{]) }
+\NormalTok{fits}\SpecialCharTok{$}\NormalTok{m4 }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{Latecov, }\AttributeTok{sample.cov =}\NormalTok{ example.cov, }\AttributeTok{sample.nobs =} \DecValTok{2571}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## Warning in lav_model_vcov(lavmodel = lavmodel, lavsamplestats = lavsamplestats, : lavaan WARNING:
+##     Could not compute standard errors! The information matrix could
+##     not be inverted. This may be a symptom that the model is not
+##     identified.
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{m4)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 33 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                        15
+##                                                       
+##   Number of observations                          2571
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                 2.260
+##   Degrees of freedom                                 0
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   pcknow =~                                           
+##     q06               1.000                           
+##     q07               1.387       NA                  
+##   statknow =~                                         
+##     q01               1.000                           
+##     q04               1.522       NA                  
+##     q05               1.311       NA                  
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   pcknow ~~                                           
+##     statknow          0.201       NA                  
+##  .q06 ~~                                              
+##    .q07               0.191       NA                  
+##  .q01 ~~                                              
+##    .q04               0.008       NA                  
+##    .q05               0.033       NA                  
+##  .q04 ~~                                              
+##    .q05              -0.072       NA                  
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##    .q06               0.938       NA                  
+##    .q07               0.599       NA                  
+##    .q01               0.466       NA                  
+##    .q04               0.391       NA                  
+##    .q05               0.553       NA                  
+##     pcknow            0.320       NA                  
+##     statknow          0.220       NA
+\end{verbatim}
+
+\hypertarget{identification}{%
+\section{IDENTIFICATION}\label{identification}}
+
+\hypertarget{degrees-of-freedom}{%
+\subsection{Degrees of Freedom}\label{degrees-of-freedom}}
+
+Then, \(\mathbf{\Sigma}(\theta)\) is decomposed into
+\(\mathbf{\Lambda_{x}}\) matrix that has \(pq\) elements; \(\Phi\) has
+\((q)(q+1)/2\) nonredundant parameters, and
+\(\mathbf{\Theta}_{\varepsilon}\) has \((p)(p+1)/2\) parameters.
+
+Thus \(\mathbf{\Sigma}(\theta)\) is decomposed into
+\(pq\; +\; (q)(q+1)/2 \;+\;(p)(p+1)/2\) parameters. With \(p\) variables
+in \(\mathbf{X}\), \(\mathbf{\Sigma}\) has \((p)(p+1)/2\)
+\textbf{know-to-be-identified} elements.
+
+So the number of \textbf{free parameters} in (\(t\)) must be less than
+or equal to the number of unique elements in the covariance matrix of
+\(\mathbf{X}\).
+
+\[
+\tag{2}
+t \quad \leq \quad \frac{1}{2}(p)(p+1)  
+\]
+
+The \emph{t-rule} present in (2) is a necessary but not sufficient
+condition for identification.
+
+In regression models, identification is never an issue, just because
+they are always \textbf{just-identified} models. This mean that the
+number of parameters to estimate exactly equal the amount of
+non-redundant information in the data set.
+
+\textbf{Known Values} or non-redundant variances/covariances in the data
+set matrix: total number of parameters.
+
+The concept of a \textbf{fixed} or \textbf{free parameter} is essential
+in CFA. The total number of parameters in a CFA model is determined by
+the number of \textbf{known values } \textbf{(\(kv\))} in your
+population variance-covariance matrix \(\Sigma\), given by the formula
+\((2)\) where \(p\) is the number of items/manifest variables in your
+survey.
+
+Suppose the principal investigator thinks that the q1, q4 and q5 items
+of the SAQ are the observed indicators of Statknow. To obtain the sample
+covariance matrix \(\mathbf{S}=\mathbf{\Sigma}\), which is an estimate
+of the population covariance matrix \(\mathbf{\Sigma}\), use the command
+\texttt{select}, choose the interest columns, and the command
+\texttt{cov}. The function round with the option 2 specifies that we
+want to round the numbers to the second digit.
+
+The \textbf{known values} serve as the primary restriction in terms of
+\textbf{how many total parameters we are able to estimate}. The known
+values serve as the upper limit of the number of parameters you can
+possibly estimate in our model. The parameters coming from the model are
+called model parameters and are calculates with (3).
+
+\[
+\tag{3}
+\text{n. parameters}\;=\quad pq\; +\; \frac{(q)(q+1)}{2} \;+\;\frac{(p)(p+1)}{2}
+\] for \(p\) variables and \(q\) factors (latent).
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{latent }\OtherTok{\textless{}{-}} \FunctionTok{select}\NormalTok{(dat1, q06, q07, q01, q04, q05)}
+\FunctionTok{round}\NormalTok{(}\FunctionTok{cov}\NormalTok{(latent[,]),}\DecValTok{2}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##      q06  q07  q01  q04  q05
+## q06 1.26 0.64 0.20 0.30 0.28
+## q07 0.64 1.22 0.28 0.43 0.36
+## q01 0.20 0.28 0.69 0.34 0.32
+## q04 0.30 0.43 0.34 0.90 0.37
+## q05 0.28 0.36 0.32 0.37 0.93
+\end{verbatim}
+
+For the model of
+\texttt{statknow\ =\textasciitilde{}\ q01\ +\ q04\ +\ q05} we have three
+items, so 3(3+1)/2 = 6 (since by symmetry,
+\(\theta_{12}=\theta_{21},\, \theta_{13}=\theta_{31},\, \theta_{23}=\theta_{32}\))
+known values from the var-cov matrix, one parameter from \(y\) latent
+variable \(\psi_{11}\) and 3 more parameters from \(\lambda\)'s. In
+total we have 10 total parameters, but we just have only 6 known values.
+
+\[
+\begin{equation}
+\tag{4}
+\Sigma(\theta)=\underbrace{\begin{bmatrix}
+\lambda_{1}     \\
+\lambda_{2}     \\
+\lambda_{3}     \\
+            \end{bmatrix}
+ }_{\mathbf{loandings}} \underbrace{\begin{bmatrix}
+(\psi_{11})
+            \end{bmatrix}
+ }_{\mathbf{variance \; of \; the \;factor}} \underbrace{\begin{bmatrix}
+\lambda_{1}  & \lambda_{2}  & \lambda_{3}    \\
+            \end{bmatrix}
+ }_{\mathbf{loadings}} + \underbrace{\begin{bmatrix}
+\theta_{11} & - & -   \\
+\theta_{21} & \theta_{22} & -       \\
+\theta_{31} & \theta_{32} & \theta_{33}    \\
+            \end{bmatrix}
+            }_{\mathbf{residual \; covariance}}
+\end{equation}
+\] The unique parameters in the model (4) are 10 (6 var-cov, 3 loadings
+e 1 factor var). Observe that we don`t have a fixed parameter. Not good,
+model is under identified (can find solution). And changing for four
+items and one LV?
+
+\[
+\begin{equation}
+\tag{8}
+\Sigma(\theta)=\underbrace{\begin{bmatrix}
+\lambda_{1}     \\
+\lambda_{2}     \\
+\lambda_{3} \\
+\lambda_{4} \\
+            \end{bmatrix}
+ }_{\mathbf{loandings}} \underbrace{\begin{bmatrix}
+(\psi_{11})
+            \end{bmatrix}
+ }_{\mathbf{variance \; of \; the \;factor}} \underbrace{\begin{bmatrix}
+\lambda_{1}  & \lambda_{2}  & \lambda_{3} & \lambda_{4}    \\
+            \end{bmatrix}
+ }_{\mathbf{loadings}} + \underbrace{\begin{bmatrix}
+\theta_{11} & - & - & -   \\
+0 & \theta_{22} & - & -       \\
+0 & 0 & \theta_{33} &     \\
+0 & 0 & 0 & \theta_{44}    \\
+            \end{bmatrix}
+            }_{\mathbf{residual \; covariance}}
+\end{equation}
+\] For four items we will have ten pieces of non-redundant information:
+4(4+1)/2 = 10. So, if the none of their error variances covary, we have
+10 of unique parameters, and 9 number of fixed parameters (4 loadings, 4
+variances and one variance of the factor (\(\psi_{11}\)). So we have a
+model overidentified.
+
+Free Parameters
+
+number of free parameters (\textbf{t}) = n of unique parameters - number
+of fixed parameters
+
+So, the
+
+Degrees of Freedom
+
+degrees of freedom (\textbf{df}) = numb. of known values - number of
+free parameters
+
+Table!
+
+\begin{itemize}
+\item
+  \textbf{df negative}: known \textless{} fixed parameters
+  (\emph{under-identified} - { cannot run })
+\item
+  \textbf{df = 0}: \textbf{known} = fixed (\emph{saturated or
+  just-identified model} - no model fit statistics)
+\item
+  \textbf{df positive}: \textbf{known} \textgreater{} fixed
+  (\emph{over-identified} - model fit stats can be assessed)
+\end{itemize}
+
+\hypertarget{estimation}{%
+\section{ESTIMATION}\label{estimation}}
+
+\hypertarget{defining-the-metric-of-latent-variable}{%
+\subsection{Defining the Metric of Latent
+Variable}\label{defining-the-metric-of-latent-variable}}
+
+How it is a latent variable, which is right metric for it?
+
+\textbf{To standardize or not to standardize, that`s the question}
+
+\textbf{a) standardized}: (\(b^{*}\)): better when comparing
+coefficients within the same model\\
+
+\textbf{b) unstandardized} (\(b\)) (natural metric): comparing
+coefficients for the same variable relationships across samples or
+meaningful raw score units (dollar, height, age).
+
+We have two ways to identify the model
+
+\hypertarget{marked-variable-method}{%
+\subsubsection{Marked variable method}\label{marked-variable-method}}
+
+\textbf{Fixing the loads}: This method requires a single factor loading
+for each LV be constrained to an arbitrary value (usually the first
+one). Fixes the first loading (default in R) of the first factors. We
+set the scale to that item to everything else.
+
+\textbf{Usage:} You can use when you have the same scale items
+before\ldots{}
+
+\[
+\Sigma(\theta)=\underbrace{\begin{bmatrix}
+1     \\
+\lambda_{71}     \\
+1     \\
+\lambda_{42}     \\
+\lambda_{52}     
+            \end{bmatrix}
+ }_{\mathbf{loandings}} \underbrace{\begin{bmatrix}
+\psi_{11} & \\
+\psi_{12} & \psi_{22}
+            \end{bmatrix}
+ }_{\mathbf{variance \; of \; the \;factor}} \underbrace{\begin{bmatrix}
+1  & \lambda_{71}  & 1 & \lambda_{42} & \lambda_{52} \\
+            \end{bmatrix}
+ }_{\mathbf{loadings}} + \underbrace{\begin{bmatrix}
+\theta_{66} & 0 & 0 & 0 & 0  \\
+0 & \theta_{77} & 0 & 0 & 0   \\
+0 & 0 & \theta_{11} & 0 & 0    \\
+0 & 0 & 0 & \theta_{44} & 0    \\
+0 & 0 & 0 & 0 & \theta_{55}    \\
+            \end{bmatrix}
+            }_{\mathbf{residual \; covariance}}
+\] So
+
+\includegraphics{CFA_files/figure-latex/twofactor-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{summary}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 29 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                        11
+##                                                       
+##   Number of observations                          2571
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                23.935
+##   Degrees of freedom                                 4
+##   P-value (Chi-square)                           0.000
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   pcknow =~                                           
+##     q06               1.000                           
+##     q07               1.384    0.074   18.640    0.000
+##   statknow =~                                         
+##     q01               1.000                           
+##     q04               1.289    0.058   22.336    0.000
+##     q05               1.146    0.054   21.346    0.000
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   pcknow ~~                                           
+##     statknow          0.225    0.016   14.269    0.000
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##    .q06               0.800    0.031   25.496    0.000
+##    .q07               0.336    0.043    7.760    0.000
+##    .q01               0.423    0.016   26.869    0.000
+##    .q04               0.463    0.021   22.247    0.000
+##    .q05               0.585    0.021   27.350    0.000
+##     pcknow            0.459    0.035   13.130    0.000
+##     statknow          0.263    0.018   14.352    0.000
+\end{verbatim}
+
+The interpretation is easy, first we have the loadings at the
+\textbf{Estimate} column (\emph{q7}(1.384)) and \texttt{q6} as 1?
+
+It means \texttt{lavaan} is fixing the first loading at 1 (marker method
+is the \emph{default method}). So it is a fixed parameter, there is no
+statistics for it, but the others are free estimates. The number os free
+parameters are 13 minus 2 fixed parameters. The \emph{df} is 15 (unique
+parameters) - 11 = 4.
+
+For one unit (in terms of item \emph{q6}) increase in \textbf{Pcknow},
+item \textbf{q7} goes up 1.384 points . In \textbf{Variances} we can see
+that variance of the factor, in scale of item \texttt{q6}, and the
+\textbf{dot} (.) means error.
+
+\hypertarget{standardized-latent-variable}{%
+\subsubsection{Standardized Latent
+Variable}\label{standardized-latent-variable}}
+
+Fixing the variance of each factor to 1 but freely estimates of the all
+loadings. It makes a LV a standardized variable (Z-score). If the
+indicator variables are also standardized, the loadings are interpreted
+as regression coefficients. Moreover, the covariance among the LV
+becomes a correlation.
+
+\[
+\Sigma(\theta)=\underbrace{\begin{bmatrix}
+\lambda_{61}     \\
+\lambda_{71}     \\
+\lambda_{12}     \\
+\lambda_{42}     \\
+\lambda_{52}     
+            \end{bmatrix}
+ }_{\mathbf{loandings}} \underbrace{\begin{bmatrix}
+1 & \\
+\psi_{12} & 1
+            \end{bmatrix}
+ }_{\mathbf{variance \; of \; the \;factor}} \underbrace{\begin{bmatrix}
+\lambda_{61}  & \lambda_{71}  & \lambda_{12} & \lambda_{42} & \lambda_{52} \\
+            \end{bmatrix}
+ }_{\mathbf{loadings=5param}} + \underbrace{\begin{bmatrix}
+\theta_{66} & 0 & 0 & 0 & 0  \\
+0 & \theta_{77} & 0 & 0 & 0   \\
+0 & 0 & \theta_{11} & 0 & 0    \\
+0 & 0 & 0 & \theta_{44} & 0    \\
+0 & 0 & 0 & 0 & \theta_{55}    \\
+            \end{bmatrix}
+            }_{\mathbf{residual \; covariance=5param.}}
+\] Checking \emph{t-rule} \[
+1+5+5 \leq [8\times(8+1)]\frac{1}{2} \; \Leftrightarrow \;11 \; \leq \;15
+\]
+
+Syntax no R
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#two factors, variance std }
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{Latecov2 }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}}
+\StringTok{\#Reg}
+\StringTok{pcknow =\textasciitilde{} NA*q06 + q07}
+\StringTok{statknow =\textasciitilde{} NA*q01 + q04 + q05}
+
+\StringTok{\#variances and covariances}
+\StringTok{pcknow \textasciitilde{}\textasciitilde{} 1*pcknow }
+\StringTok{statknow \textasciitilde{}\textasciitilde{} 1*statknow}
+\StringTok{\textquotesingle{}}
+              
+\NormalTok{fits}\SpecialCharTok{$}\NormalTok{Latecov2 }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{Latecov2, }\AttributeTok{data =}\NormalTok{ dat1, }\AttributeTok{std.lv=}\ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+Now what is it doing?
+
+Lavaan use as default marker method, so we have to override it freeing
+the first parameter (\texttt{NA}) of it. The syntax \texttt{NA*read}
+frees the loading of the first item because by default marker method
+fixes it to one. And then we have to fix variance to one, and
+\textbf{double till} means the variance of the factor -
+\texttt{pcknow\ \textasciitilde{}\textasciitilde{}\ 1*pcknow}. There is
+no blank row in estimated variables, and the \(pcknow = statknow = 1\)
+in estimate variances. For one standard deviation increase in
+\textbf{Pcknow}, \emph{q6} goes up 0.68 points.
+
+\includegraphics{CFA_files/figure-latex/unnamed-chunk-8-1.pdf}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{lavaan}\SpecialCharTok{::}\FunctionTok{summary}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 17 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                        11
+##                                                       
+##   Number of observations                          2571
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                23.935
+##   Degrees of freedom                                 4
+##   P-value (Chi-square)                           0.000
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   pcknow =~                                           
+##     q06               0.677    0.026   26.260    0.000
+##     q07               0.938    0.028   32.956    0.000
+##   statknow =~                                         
+##     q01               0.512    0.018   28.704    0.000
+##     q04               0.661    0.020   32.333    0.000
+##     q05               0.587    0.021   28.220    0.000
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   pcknow ~~                                           
+##     statknow          0.648    0.023   28.819    0.000
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##     pcknow            1.000                           
+##     statknow          1.000                           
+##    .q06               0.800    0.031   25.496    0.000
+##    .q07               0.336    0.043    7.760    0.000
+##    .q01               0.423    0.016   26.869    0.000
+##    .q04               0.463    0.021   22.247    0.000
+##    .q05               0.585    0.021   27.350    0.000
+\end{verbatim}
+
+\hypertarget{evaluation-fit-statistics}{%
+\section{EVALUATION: Fit Statistics}\label{evaluation-fit-statistics}}
+
+Since we have an over-identified model, How well does this model fit?
+
+\hypertarget{a-note-on-sample-size-does-size-matter}{%
+\subsection{A note on sample size: Does size
+matter?}\label{a-note-on-sample-size-does-size-matter}}
+
+Model chi-square is sensitive to large sample sizes, but does that mean
+we stick with small samples? The answer is no, larger samples are always
+preferred.
+
+CFA and the general class of structural equation model are actually
+large sample techniques and much of the theory is based on the premise
+that your sample size is as large as possible. So how big of a sample do
+we need? Kline (2016)\footnote{KLINE, Rex B. Principles and practice of
+  structural equation modeling. Guilford publications, 2016.} notes the
+\emph{N:q} rule, which states that the sample size should be determined
+by the number of parameters in your model, and the recommended ratio is
+20:1.
+
+This means that if you have 10 parameters, you should have \emph{n=200}.
+A sample size less than 100 is almost always untenable according to
+Kline (2016).
+
+\hypertarget{exact-fit-model-chi-square}{%
+\subsection{Exact Fit: Model
+chi-square}\label{exact-fit-model-chi-square}}
+
+Is my model good enough to perfectly reproduce the population covariance
+matrix?
+
+The model \emph{chi-square} is defined as either or depending on the
+statistical package where is the sample size and is the fit function
+from maximum likelihood (in lavaan, this is known as the Test Statistic
+for the Model Test User Model), which is a statistical method used to
+estimate the parameters in your model. The model chi-square is a
+meaningful test only when you have an \textbf{over-identified model}
+(i.e., there are still degrees of freedom left over after accounting for
+all the free parameters in your model).
+
+The model chi-square is proportional to the discrepancy of
+\(\mathbf{\Sigma{(\hat{\theta}})}\) and \(\mathbf{S}\), the higher the
+chi-square the more positive the value of
+\(\mathbf{S} \, - \, \mathbf{\Sigma{(\hat{\theta}})}\), defined as
+residual covariance. It tests whether the covariance matrix derived from
+the model represents the population covariance.
+
+\[
+\text{h}_{0}: \mathbf{\Sigma{(\theta})}=\mathbf{\Sigma}\\
+\text{h}_{1}: \mathbf{\Sigma{(\theta})} \neq \mathbf{\Sigma}
+\]
+
+Generally, chi-square is used as an \textbf{absolute fit index}, with a
+low chi-square value relative to the degrees of freedom (and higher
+p-value) indicating better model fit. Since the test is used to reject a
+null hypothesis representing perfect fit, chi-square is often referred
+to as a \textbf{`badness of fit'} or \textbf{`lack of fit index'}(ALAVI
+et al.~)\footnote{ALAVI, M., VISENTIN, D. C., THAPA, D. K., HUNT, G. E.,
+  WATSON, R., \& CLEARY, M. L.. Chi-square for model fit in confirmatory
+  factor analysis.2020.}.
+
+The model chi-square is defined as \(nF_{ml}\), and the \(F_{ml}\) is
+the fit function from maximum likelihood
+
+\[
+F_{ml}\,=\,log|\mathbf{\hat{\Sigma}(\theta)}|+tr(\mathbf{S}\mathbf{\hat{\Sigma}^{-1}(\theta)})-log|\mathbf{S}|-(p+q)
+\] with \(n\) as sample size, \(p\) exogenous variables, and \(q\) is
+the number of endogenous variables. So it`s
+\(nF_{ml}\,\chi^{2}\, \sim \, (df_{\text{user}})\).
+
+The Test Statistic is relatively large (23.935) and there is an
+additional row with P-value (Chi-square) indicating that we reject the
+null hypothesis.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Eight Item Two{-}Factor CFA and Latent Covs = 1 (Over{-}Identified)}
+\FunctionTok{summary}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 17 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                        11
+##                                                       
+##   Number of observations                          2571
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                23.935
+##   Degrees of freedom                                 4
+##   P-value (Chi-square)                           0.000
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   pcknow =~                                           
+##     q06               0.677    0.026   26.260    0.000
+##     q07               0.938    0.028   32.956    0.000
+##   statknow =~                                         
+##     q01               0.512    0.018   28.704    0.000
+##     q04               0.661    0.020   32.333    0.000
+##     q05               0.587    0.021   28.220    0.000
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##   pcknow ~~                                           
+##     statknow          0.648    0.023   28.819    0.000
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##     pcknow            1.000                           
+##     statknow          1.000                           
+##    .q06               0.800    0.031   25.496    0.000
+##    .q07               0.336    0.043    7.760    0.000
+##    .q01               0.423    0.016   26.869    0.000
+##    .q04               0.463    0.021   22.247    0.000
+##    .q05               0.585    0.021   27.350    0.000
+\end{verbatim}
+
+The larger the chi-square value the larger the difference between the
+sample implied covariance matrix \(\mathbf{\Sigma{(\hat{\theta}})}\) and
+the sample observed \(\mathbf{S}\) covariance matrix, and the more
+likely you will reject your model.
+
+We can recreate the p-value which is essentially zero, using the density
+function of the chi-square with 20 degrees of freedom \(\chi^{2}_{4}\).
+Note that scientific notation of \(8.23 \times 10^{5}\) means
+\(8.23/10^{5}\) which is a really small number.
+
+\textbf{Prob do Chi-Square}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#model chi{-}square}
+\FunctionTok{pchisq}\NormalTok{(}\AttributeTok{q=}\FloatTok{23.935}\NormalTok{,}\AttributeTok{df=}\DecValTok{4}\NormalTok{,}\AttributeTok{lower.tail=}\ConstantTok{FALSE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## [1] 8.230705e-05
+\end{verbatim}
+
+Since \(p<0.05\), using the model chi-square criteria alone we reject
+the null hypothesis that the model fits the data.
+
+It is well documented in CFA and SEM literature that the chi-square is
+often overly sensitive in model testing especially for large samples.
+For models with 75 to 200 cases chi-square is a reasonable measure of
+fit. Since the power of the model are positively correlated to the size
+of the sample (like in regression that we want to reject the null
+hypothesis), for 400 cases or more it is nearly almost always
+significant.
+
+Note that scientific notation of means which is a really small number,
+using the model chi-square criteria alone we reject the null hypothesis
+that the model fits the data.
+
+\hypertarget{incremental-versus-absolute-fit-index}{%
+\subsection{Incremental versus absolute fit
+index}\label{incremental-versus-absolute-fit-index}}
+
+For over-identified models, there are many types of fit indexes
+available to the researcher. Historically, model chi-square was the only
+measure of fit but in practice the null hypothesis was often rejected
+due to the chi-square's heightened sensitivity under large samples.
+
+To resolve this problem, \textbf{approximate fit indexes} that were not
+based on accepting or rejecting the null hypothesis were developed.
+Approximate fit indexes can be further classified into
+
+\begin{itemize}
+\item
+  \begin{enumerate}
+  \def\labelenumi{\alph{enumi})}
+  \tightlist
+  \item
+    absolute and
+  \end{enumerate}
+\item
+  \begin{enumerate}
+  \def\labelenumi{\alph{enumi})}
+  \setcounter{enumi}{1}
+  \tightlist
+  \item
+    incremental or relative fit indexes.
+  \end{enumerate}
+\end{itemize}
+
+An incremental fit index (a.k.a. relative fit index) assesses the ratio
+of the deviation of the user model from the worst fitting model (a.k.a.
+the baseline model) against the deviation of the saturated model from
+the baseline model. Conceptually, if the deviation of the user model is
+the same as the deviation of the saturated model (a.k.a best fitting
+model), then the ratio should be 1. Alternatively, the more discrepant
+the two deviations, the closer the ratio is to 0 (see figure below).
+
+Examples of \textbf{incremental} fit indexes are the \emph{CFI} and
+\emph{TLI}. An \textbf{absolute} fit index on the other hand, does not
+compare the user model against a baseline model, but instead compares it
+to the \textbf{observed data}. An example of an absolute fit index is
+the RMSEA.
+
+\hypertarget{approximate-fit-index}{%
+\subsection{Approximate Fit Index}\label{approximate-fit-index}}
+
+\hypertarget{optional-model-test-of-the-baseline-or-null-model}{%
+\subsubsection{(Optional) Model test of the baseline or null
+model}\label{optional-model-test-of-the-baseline-or-null-model}}
+
+Before to check other statistics we need to check what a
+\textbf{baseline model} is.
+
+The \textbf{model test baseline} is also known as the \textbf{null
+model}, where all covariances are set to zero and freely estimates
+variances. Rather than estimate the factor loadings, here we only
+estimate the observed means and variances (removing all the
+covariances). Recall that we have \(p(p+1)/2\) covariances. Since we are
+only estimating the \(p\) variances we have degrees of freedom, or in
+this particular model \(p(p+1)/2-p\) degrees of freedom. You can verify
+in the output below that we indeed have 8 free parameters and 28 degrees
+of freedom.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#Model Test User Model:}
+\CommentTok{\#Base Line model}
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{base }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}q01 \textasciitilde{}\textasciitilde{} q01}
+\StringTok{                  q02 \textasciitilde{}\textasciitilde{} q02}
+\StringTok{                  q03 \textasciitilde{}\textasciitilde{} q03}
+\StringTok{                  q04 \textasciitilde{}\textasciitilde{} q04}
+\StringTok{                  q05 \textasciitilde{}\textasciitilde{} q05}
+\StringTok{                  q06 \textasciitilde{}\textasciitilde{} q06}
+\StringTok{                  q07 \textasciitilde{}\textasciitilde{} q07}
+\StringTok{                  q08 \textasciitilde{}\textasciitilde{} q08\textquotesingle{}}                                                  
+
+\CommentTok{\#Running base model}
+\NormalTok{onefac3items\_base }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{base, }\AttributeTok{data=}\NormalTok{dat1) }
+\FunctionTok{summary}\NormalTok{(onefac3items\_base) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 14 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                         8
+##                                                       
+##   Number of observations                          2571
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                              4164.572
+##   Degrees of freedom                                28
+##   P-value (Chi-square)                           0.000
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)
+##     q01               0.685    0.019   35.854    0.000
+##     q02               0.724    0.020   35.854    0.000
+##     q03               1.155    0.032   35.854    0.000
+##     q04               0.899    0.025   35.854    0.000
+##     q05               0.930    0.026   35.854    0.000
+##     q06               1.258    0.035   35.854    0.000
+##     q07               1.215    0.034   35.854    0.000
+##     q08               0.761    0.021   35.854    0.000
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{semPaths}\NormalTok{(onefac3items\_base, }\AttributeTok{whatLabel =} \StringTok{"est"}\NormalTok{, }\AttributeTok{edge.label.cex =} \FloatTok{0.9}\NormalTok{, }\AttributeTok{residuals =} \ConstantTok{TRUE}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{CFA_files/figure-latex/base line model var2-1.pdf}
+There is no factor predicting it, there is no residual, so the residual
+is the variance - with no covariances. This is the baseline model, the
+worst of them, because probably the variables are correlated with each
+other.
+
+Think of the \textbf{null} or \textbf{baseline model} as the worst model
+you can come up with and the \textbf{saturated model} as the best model.
+The \textbf{saturated model} or just identified, it is that with df=0.
+So the \textbf{user model} will be the one is between the baseline and
+saturated model.
+
+Theoretically, the baseline model is useful for understanding how other
+fit indices are calculated.
+
+\begin{figure}
+\centering
+\includegraphics{/Users/rafaelpoerschke/dados/multivariada/fit.png}
+\caption{Caption for the picture.}
+\end{figure}
+
+\hypertarget{a-incremental}{%
+\subsubsection{a) Incremental}\label{a-incremental}}
+
+\hypertarget{cfi}{%
+\paragraph{CFI}\label{cfi}}
+
+CFI is the Comparative Fit Index -- values can range between 0 and 1
+(values greater than 0.90, conservatively 0.95 indicate good fit). The
+CFI or comparative fit index is a popular fit index as a supplement to
+the model chi-square. Let \(\delta=\chi^{2}-df\) where \(df\) is the
+degrees of freedom for that particular model.
+
+The closer \(\delta\) is to zero, the more the model fits the data.
+
+The formula for the CFI is: \[
+CFI = \frac{\delta \text{(Baseline)}-\delta \text{(User)}}{\delta \text{(Baseline)}}
+\]
+
+To manually calculate the CFI, recall the selected output from the
+eight-item one factor model:
+
+Now, we will estimate our \textbf{model}:
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#one factor eight items, variance std }
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{m3a }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}f =\textasciitilde{} q01 + q02 + q03 + q04 + q05 + q06 + q07 + q08\textquotesingle{}} 
+\NormalTok{onefac8items\_a }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{m3a, }\AttributeTok{data=}\NormalTok{dat1,}\AttributeTok{std.lv=}\ConstantTok{TRUE}\NormalTok{) }
+\FunctionTok{summary}\NormalTok{(onefac8items\_a, }\AttributeTok{fit.measures=}\ConstantTok{TRUE}\NormalTok{, }\AttributeTok{standardized=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 15 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                        16
+##                                                       
+##   Number of observations                          2571
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                               554.191
+##   Degrees of freedom                                20
+##   P-value (Chi-square)                           0.000
+## 
+## Model Test Baseline Model:
+## 
+##   Test statistic                              4164.572
+##   Degrees of freedom                                28
+##   P-value                                        0.000
+## 
+## User Model versus Baseline Model:
+## 
+##   Comparative Fit Index (CFI)                    0.871
+##   Tucker-Lewis Index (TLI)                       0.819
+## 
+## Loglikelihood and Information Criteria:
+## 
+##   Loglikelihood user model (H0)             -26629.559
+##   Loglikelihood unrestricted model (H1)     -26352.464
+##                                                       
+##   Akaike (AIC)                               53291.118
+##   Bayesian (BIC)                             53384.751
+##   Sample-size adjusted Bayesian (BIC)        53333.914
+## 
+## Root Mean Square Error of Approximation:
+## 
+##   RMSEA                                          0.102
+##   90 Percent confidence interval - lower         0.095
+##   90 Percent confidence interval - upper         0.109
+##   P-value RMSEA <= 0.05                          0.000
+## 
+## Standardized Root Mean Square Residual:
+## 
+##   SRMR                                           0.055
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##   f =~                                                                  
+##     q01               0.485    0.017   28.942    0.000    0.485    0.586
+##     q02              -0.198    0.019  -10.633    0.000   -0.198   -0.233
+##     q03              -0.612    0.022  -27.989    0.000   -0.612   -0.570
+##     q04               0.632    0.019   33.810    0.000    0.632    0.667
+##     q05               0.554    0.020   28.259    0.000    0.554    0.574
+##     q06               0.554    0.023   23.742    0.000    0.554    0.494
+##     q07               0.716    0.022   32.761    0.000    0.716    0.650
+##     q08               0.424    0.018   23.292    0.000    0.424    0.486
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##    .q01               0.450    0.015   30.734    0.000    0.450    0.656
+##    .q02               0.685    0.019   35.300    0.000    0.685    0.946
+##    .q03               0.780    0.025   31.157    0.000    0.780    0.675
+##    .q04               0.499    0.018   27.989    0.000    0.499    0.555
+##    .q05               0.623    0.020   31.040    0.000    0.623    0.670
+##    .q06               0.951    0.029   32.711    0.000    0.951    0.756
+##    .q07               0.702    0.024   28.678    0.000    0.702    0.578
+##    .q08               0.581    0.018   32.849    0.000    0.581    0.764
+##     f                 1.000                               1.000    1.000
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{semPaths}\NormalTok{(onefac8items\_a, }\AttributeTok{whatLabel =} \StringTok{"est"}\NormalTok{, }\AttributeTok{edge.label.cex =} \FloatTok{0.9}\NormalTok{, }\AttributeTok{residuals =} \ConstantTok{TRUE}\NormalTok{) }
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{CFA_files/figure-latex/base line model var-1.pdf} First
+calculate the number of total parameters, which are 8 loadings
+\$\lambda\emph{\{1\}, \ldots, \lambda}\{8\} \$, 8 residual variances
+\(\theta_{1},\ldots,\theta_{8}\), and 1 variance of the factor
+\(\psi_{11}\). By the variance standardization method, we have fixed 1
+parameter, namely. The number of free parameters is then:
+
+\[\text{n. of free parameters}\,\,=\,\,17 \,\,\text{total parameters}\,\, - \,\, 1 \,\, \text{fixed parameters}\,\, = \quad 16.\]
+
+Finally, there are \(8(8+1/2)=26\) known values from the variance
+covariance matrix so the degrees of freedom is
+
+\[df\,\,=\,\,36 \,\,\text{know values}\,\, - \,\, 16 \,\, \text{free parameters}\,\, = \quad 20.\]
+
+Then \(\delta \text{(Baseline)}=4164.572\) and
+\(df\text{(Baseline)}=28\), and \(\chi^{2}\text{(User)}=554.191\) and
+\(\text{(User)}=20\). So
+\(\delta \text{(Baseline)}=4164.572-28=4136.572\) and
+\(\delta \text{(User)}=554.191-20=534.191\). We can plug all of this
+into the following equation:
+
+\[
+CFI \, = \, \frac{4136.572-534.191}{4136.572} \, = \, \frac{3602.381}{4136.572} \, = \, 0.871
+\]
+
+If \(\delta \text{(User)}=0\), then it means that the user model is not
+misspecified, so the numerator becomes \(\text{(Baseline)}\) and the
+ratio becomes 1. The closer the CFI is to 1, the better the fit of the
+model; with the maximum being 1. Some criteria claims 0.90 to 0.95 as a
+good cutoff for good fit {[}citation needed{]}.
+
+\hypertarget{tucker-lewis-tli}{%
+\paragraph{Tucker-Lewis (TLI)}\label{tucker-lewis-tli}}
+
+The term used in the Tucker Lewis Index TLI is the relative chi-square
+(a.k.a. normed chi-square) defined as \(\frac{\chi^{2}}{df}\). Compared
+to the model chi-square, relative chi-square is less sensitive to sample
+size.
+
+TLI which also ranges between 0 and 1 (if it's greater than 1 it should
+be rounded to 1) with values greater than 0.90 indicating good fit. If
+the CFI and TLI are less than one, the CFI is always greater than the
+TLI.
+
+The TLI formula is defined like: \[
+TLI \, = \, \frac{min[\chi^2 \text{(Baseline)} / df \text{(Baseline)},1]-min[\chi^2 \text{(User)} / df  \text{(User)},1]}{min[\chi^2 \text{(Baseline)} / df \text{(Baseline)},1]-1}
+\] In the denominator we have a 1 since \(\chi^2 \text{(Satureted)}=0\)
+and \(df \text{(Satureted)}=0\) implies that
+\(min(\chi^2 \text{(Satureted)}/df\text{(Satureted)},1)=1\). Also, the
+TLI can be greater than 1 but for practical purposes we round it to 1.
+Given the eight-item one factor model:
+
+\[
+TLI \, = \, \frac{4164.572/ 28-554.191 / 20}{4164.572 / 28-1} \, = \, 0.819
+\]
+
+\hypertarget{b-absolute}{%
+\subsubsection{b) Absolute}\label{b-absolute}}
+
+\hypertarget{rmsea}{%
+\paragraph{RMSEA}\label{rmsea}}
+
+RMSEA is the root mean square error of approximation. The root mean
+square error of approximation is an absolute measure of fit because it
+does not compare the discrepancy of the user model relative to a
+baseline model like the CFI or TLI. Instead, RMSEA defines \(\delta\) as
+the non-centrality parameter which measures the \textbf{degree of
+misspecification}. Recall from the CFI that \(\delta=\chi^2-df\) where
+\(df\) is the degrees of freedom for that particular model. The greater
+the \(\delta\) the more misspefied the model.
+
+\[
+RMSE = \sqrt{\frac{\delta}{df(n-1)}}
+\] where \(n\) is the total number of observations. The cutoff criteria
+as defined in Kline (2016, p.274-275)
+
+Table!
+
+\begin{itemize}
+\tightlist
+\item
+  \(\leq 0.05\) (\textbf{close-fit})
+\item
+  between \(0.05\) and \(**0.08**\) (reasonable approximate fit, fails
+  close-fit but also fails poor-fit)
+\item
+  \(\geq 0.10\) (\textbf{poor-fit})
+\end{itemize}
+
+In the case of our SAQ-8 factor analysis, \(n=2,571\), \(df(User)=20\)
+and \(\delta (User)=534.191\) which we already known from calculating
+the CFI. Here \(\delta\) is large relative to degrees of freedom.
+
+\[
+RMSE = \sqrt{\frac{534.191}{20(2,571-1)}}=\sqrt{0.0104}=0.102
+\] Our RMSEA = 0.10 indicating poor fit, as evidence by the large
+\(\delta\) relative to the degrees of freedom.
+
+\hypertarget{srmr}{%
+\subsubsection{SRMR}\label{srmr}}
+
+This is a badness of fit index, the bigger the value, the worse the fit.
+A SMSR lower or egual to 0.05 is a good fit and between 0.05 e 0.09 is
+considered an adequate fit (MacCallum et al.~1996)\footnote{MACCALLUM,
+  R. C., BROWNE, M. W., \& SUGAWARA, H. M. Power analysis and
+  determination of sample size for covariance structure modeling.
+  Psychological Methods, 1, 130--149, 1996.}
+
+\hypertarget{interpretation}{%
+\section{INTERPRETATION}\label{interpretation}}
+
+\hypertarget{standardized-solution-in-lavaan}{%
+\subsection{Standardized Solution in
+Lavaan}\label{standardized-solution-in-lavaan}}
+
+By default, \texttt{lavaan} chooses the marker method (Option 1) if
+nothing else is specified. To better interpret the factor loadings,
+often times you would request the \textbf{standardized solutions}. Going
+back to our orginal marker method object \texttt{onefac3items\_a} we
+request the summary but also specify that \texttt{standardized=TRUE}.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# 2 factors 5 items, plain model}
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{Latecov2\_plain }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}}
+\StringTok{\#Reg}
+\StringTok{pcknow =\textasciitilde{} q06 + q07}
+\StringTok{statknow =\textasciitilde{} q01 + q04 + q05 }
+
+\StringTok{\#variances and covariances}
+
+\StringTok{statknow \textasciitilde{}\textasciitilde{} pcknow}
+
+\StringTok{\textquotesingle{}}
+\NormalTok{fits}\SpecialCharTok{$}\NormalTok{Latecov2\_plain }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{Latecov2\_plain, }\AttributeTok{data =}\NormalTok{ dat1, }\AttributeTok{meanstructure =} \ConstantTok{FALSE}\NormalTok{)            }
+\FunctionTok{summary}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2\_plain, }\AttributeTok{standardized=}\ConstantTok{TRUE}\NormalTok{, }\AttributeTok{fit.measures=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 29 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                        11
+##                                                       
+##   Number of observations                          2571
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                23.935
+##   Degrees of freedom                                 4
+##   P-value (Chi-square)                           0.000
+## 
+## Model Test Baseline Model:
+## 
+##   Test statistic                              2634.246
+##   Degrees of freedom                                10
+##   P-value                                        0.000
+## 
+## User Model versus Baseline Model:
+## 
+##   Comparative Fit Index (CFI)                    0.992
+##   Tucker-Lewis Index (TLI)                       0.981
+## 
+## Loglikelihood and Information Criteria:
+## 
+##   Loglikelihood user model (H0)             -16765.895
+##   Loglikelihood unrestricted model (H1)     -16753.928
+##                                                       
+##   Akaike (AIC)                               33553.790
+##   Bayesian (BIC)                             33618.163
+##   Sample-size adjusted Bayesian (BIC)        33583.212
+## 
+## Root Mean Square Error of Approximation:
+## 
+##   RMSEA                                          0.044
+##   90 Percent confidence interval - lower         0.028
+##   90 Percent confidence interval - upper         0.062
+##   P-value RMSEA <= 0.05                          0.685
+## 
+## Standardized Root Mean Square Residual:
+## 
+##   SRMR                                           0.017
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##   pcknow =~                                                             
+##     q06               1.000                               0.677    0.604
+##     q07               1.384    0.074   18.640    0.000    0.938    0.851
+##   statknow =~                                                           
+##     q01               1.000                               0.512    0.619
+##     q04               1.289    0.058   22.336    0.000    0.661    0.697
+##     q05               1.146    0.054   21.346    0.000    0.587    0.609
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##   pcknow ~~                                                             
+##     statknow          0.225    0.016   14.269    0.000    0.648    0.648
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##    .q06               0.800    0.031   25.496    0.000    0.800    0.635
+##    .q07               0.336    0.043    7.760    0.000    0.336    0.276
+##    .q01               0.423    0.016   26.869    0.000    0.423    0.617
+##    .q04               0.463    0.021   22.247    0.000    0.463    0.515
+##    .q05               0.585    0.021   27.350    0.000    0.585    0.629
+##     pcknow            0.459    0.035   13.130    0.000    1.000    1.000
+##     statknow          0.263    0.018   14.352    0.000    1.000    1.000
+\end{verbatim}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\# standardized=TRUE will show us all methods (marker, variance and automatic standardized)}
+\end{Highlighting}
+\end{Shaded}
+
+Alternatively you can request a more condensed output of the
+standardized solution by the following, note that the output only
+outputs \texttt{Std.all}. It means the are standardizing the factor
+variance to one and is standardized the items by it self. So now we have
+a kind of correlations.
+
+Notice that there are two additional columns, \texttt{Std.lv} (variance
+standardized) and \texttt{Std.all}.
+
+Comparing the two solutions, the loadings and variance of the factors
+are different but the residual variances are the same.
+
+\textbf{Interpretation} \textasciitilde\textasciitilde\textasciitilde{}
+
+I mean, for one standard deviation in \textbf{q6}, \textbf{Pcknow} goes
+up to 0.604 standard deviation units.
+\textasciitilde\textasciitilde\textasciitilde{}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{\#two factors, variance std and intercept }
+\NormalTok{myModels}\SpecialCharTok{$}\NormalTok{Latecov2\_intercept }\OtherTok{\textless{}{-}} \StringTok{\textquotesingle{}}
+\StringTok{\#Reg}
+\StringTok{pcknow =\textasciitilde{} NA*q06 + q07}
+\StringTok{statknow =\textasciitilde{} NA*q01 + q04 + q05 }
+
+\StringTok{\#variances and covariances}
+\StringTok{pcknow \textasciitilde{}\textasciitilde{} 1*pcknow }
+\StringTok{statknow \textasciitilde{}\textasciitilde{} 1*statknow}
+\StringTok{statknow \textasciitilde{}\textasciitilde{} pcknow}
+
+\StringTok{\# intercepts }
+\StringTok{               \#pcknow \textasciitilde{} 1 }
+\StringTok{               \#statknow \textasciitilde{} 1}
+\StringTok{\textquotesingle{}}
+              
+\NormalTok{fits}\SpecialCharTok{$}\NormalTok{Latecov2\_intercept }\OtherTok{\textless{}{-}}\NormalTok{ lavaan}\SpecialCharTok{::}\FunctionTok{cfa}\NormalTok{(myModels}\SpecialCharTok{$}\NormalTok{Latecov2\_intercept, }\AttributeTok{data =}\NormalTok{ dat1, }\AttributeTok{std.lv=}\ConstantTok{FALSE}\NormalTok{, }\AttributeTok{meanstructure =} \ConstantTok{TRUE}\NormalTok{)}
+\FunctionTok{summary}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2\_intercept,}\AttributeTok{standardized=}\ConstantTok{TRUE}\NormalTok{, }\AttributeTok{fit.measures=}\ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## lavaan 0.6-8 ended normally after 17 iterations
+## 
+##   Estimator                                         ML
+##   Optimization method                           NLMINB
+##   Number of model parameters                        16
+##                                                       
+##   Number of observations                          2571
+##                                                       
+## Model Test User Model:
+##                                                       
+##   Test statistic                                23.935
+##   Degrees of freedom                                 4
+##   P-value (Chi-square)                           0.000
+## 
+## Model Test Baseline Model:
+## 
+##   Test statistic                              2634.246
+##   Degrees of freedom                                10
+##   P-value                                        0.000
+## 
+## User Model versus Baseline Model:
+## 
+##   Comparative Fit Index (CFI)                    0.992
+##   Tucker-Lewis Index (TLI)                       0.981
+## 
+## Loglikelihood and Information Criteria:
+## 
+##   Loglikelihood user model (H0)             -16765.895
+##   Loglikelihood unrestricted model (H1)     -16753.928
+##                                                       
+##   Akaike (AIC)                               33563.790
+##   Bayesian (BIC)                             33657.423
+##   Sample-size adjusted Bayesian (BIC)        33606.586
+## 
+## Root Mean Square Error of Approximation:
+## 
+##   RMSEA                                          0.044
+##   90 Percent confidence interval - lower         0.028
+##   90 Percent confidence interval - upper         0.062
+##   P-value RMSEA <= 0.05                          0.685
+## 
+## Standardized Root Mean Square Residual:
+## 
+##   SRMR                                           0.014
+## 
+## Parameter Estimates:
+## 
+##   Standard errors                             Standard
+##   Information                                 Expected
+##   Information saturated (h1) model          Structured
+## 
+## Latent Variables:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##   pcknow =~                                                             
+##     q06               0.677    0.026   26.260    0.000    0.677    0.604
+##     q07               0.938    0.028   32.956    0.000    0.938    0.851
+##   statknow =~                                                           
+##     q01               0.512    0.018   28.704    0.000    0.512    0.619
+##     q04               0.661    0.020   32.333    0.000    0.661    0.697
+##     q05               0.587    0.021   28.220    0.000    0.587    0.609
+## 
+## Covariances:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##   pcknow ~~                                                             
+##     statknow          0.648    0.023   28.819    0.000    0.648    0.648
+## 
+## Intercepts:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##    .q06               2.227    0.022  100.668    0.000    2.227    1.985
+##    .q07               2.924    0.022  134.510    0.000    2.924    2.653
+##    .q01               2.374    0.016  145.414    0.000    2.374    2.868
+##    .q04               2.786    0.019  148.960    0.000    2.786    2.938
+##    .q05               2.722    0.019  143.114    0.000    2.722    2.822
+##     pcknow            0.000                               0.000    0.000
+##     statknow          0.000                               0.000    0.000
+## 
+## Variances:
+##                    Estimate  Std.Err  z-value  P(>|z|)   Std.lv  Std.all
+##     pcknow            1.000                               1.000    1.000
+##     statknow          1.000                               1.000    1.000
+##    .q06               0.800    0.031   25.496    0.000    0.800    0.635
+##    .q07               0.336    0.043    7.760    0.000    0.336    0.276
+##    .q01               0.423    0.016   26.869    0.000    0.423    0.617
+##    .q04               0.463    0.021   22.247    0.000    0.463    0.515
+##    .q05               0.585    0.021   27.350    0.000    0.585    0.629
+\end{verbatim}
+
+Since we have the correlation between factor and indicators, squaring a
+completely standardized factor loading provides the proportion of
+variance in the indicator that is explained by the latent factor. For
+example, \textbf{pcknow} accounts for 36,5\% of the variance in the
+indicator \textbf{q6} (\(0,604^{2}=0,3648\)). So, 63\%
+(\(1-0,604^{2}=0.6352\)) of the observed variance in \textbf{q6} is
+estimated to be unique or error variance.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{semPaths}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2\_intercept, }\AttributeTok{whatLabel =} \StringTok{"est"}\NormalTok{, }\AttributeTok{edge.label.cex =} \FloatTok{0.9}\NormalTok{, }\AttributeTok{residuals =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\includegraphics{CFA_files/figure-latex/path for intercept-1.pdf}
+
+\hypertarget{modification-index}{%
+\subsection{Modification Index}\label{modification-index}}
+
+The Modification Index reflects an approximation of how much the overall
+model \(\chi^{2}\) would decrease in the fixed or constrained parameter
+was freely estimated.
+
+Modification indices can be requested by adding the argument
+\texttt{modindices\ =\ TRUE} in the \texttt{summary()} call, or by
+calling the function \texttt{modindices()} directly. By default,
+modification indices are printed out for each nonfree (or fixed-to-zero)
+parameter.
+
+The modification indices are supplemented by the \textbf{expected
+parameter change (EPC)} values (column epc). The last three columns
+contain the standardized EPC values (sepc.lv: only standardizing the
+latent variables; sepc.all: standardizing all variables; sepc.nox:
+standardizing all but exogenous observed variables).
+
+Let`s run baseline model
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{modindices}\NormalTok{(onefac8items\_a, }\AttributeTok{sort =} \ConstantTok{TRUE}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##    lhs op rhs      mi    epc sepc.lv sepc.all sepc.nox
+## 43 q06 ~~ q07 323.096  0.352   0.352    0.431    0.431
+## 25 q02 ~~ q03 163.202  0.200   0.200    0.273    0.273
+## 23 q01 ~~ q07  64.674 -0.115  -0.115   -0.205   -0.205
+## 22 q01 ~~ q06  37.099 -0.091  -0.091   -0.139   -0.139
+## 21 q01 ~~ q05  37.081  0.077   0.077    0.146    0.146
+## 20 q01 ~~ q04  24.875  0.062   0.062    0.130    0.130
+## 37 q04 ~~ q06  24.649 -0.084  -0.084   -0.121   -0.121
+## 33 q03 ~~ q06  19.999  0.087   0.087    0.101    0.101
+## 30 q02 ~~ q08  15.990  0.053   0.053    0.083    0.083
+## 24 q01 ~~ q08  14.501  0.044   0.044    0.087    0.087
+## 41 q05 ~~ q07  12.503 -0.059  -0.059   -0.089   -0.089
+## 26 q02 ~~ q04  12.144  0.046   0.046    0.079    0.079
+## 38 q04 ~~ q07   9.791 -0.052  -0.052   -0.087   -0.087
+## 18 q01 ~~ q02   7.059  0.032   0.032    0.057    0.057
+## 28 q02 ~~ q06   6.720  0.044   0.044    0.054    0.054
+## 39 q04 ~~ q08   5.971  0.032   0.032    0.059    0.059
+## 40 q05 ~~ q06   4.695 -0.038  -0.038   -0.049   -0.049
+## 36 q04 ~~ q05   3.665  0.028   0.028    0.049    0.049
+## 45 q07 ~~ q08   2.830 -0.026  -0.026   -0.040   -0.040
+## 32 q03 ~~ q05   2.355  0.025   0.025    0.036    0.036
+## 35 q03 ~~ q08   2.162  0.022   0.022    0.033    0.033
+## 44 q06 ~~ q08   1.625 -0.021  -0.021   -0.028   -0.028
+## 34 q03 ~~ q07   1.473 -0.023  -0.023   -0.031   -0.031
+## 27 q02 ~~ q05   1.000  0.014   0.014    0.021    0.021
+## 42 q05 ~~ q08   0.724 -0.012  -0.012   -0.019   -0.019
+## 29 q02 ~~ q07   0.369 -0.009  -0.009   -0.014   -0.014
+## 19 q01 ~~ q03   0.061 -0.003  -0.003   -0.006   -0.006
+## 31 q03 ~~ q04   0.003 -0.001  -0.001   -0.001   -0.001
+\end{verbatim}
+
+the modification index (mi) which is a 1-degree chi-square statistic. We
+see that by far the most impactful parameter is
+\texttt{q06\ \textasciitilde{}\textasciitilde{}\ q07} with a chi-square
+change of 323.096 - minus 323.096 in the predecessor \(\chi^{2}\).
+
+\textbf{Model-Implied Variance-Covariance (\(\hat{\Sigma}\))}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fitted.values}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $cov
+##     q06   q07   q01   q04   q05  
+## q06 1.258                        
+## q07 0.635 1.215                  
+## q01 0.225 0.312 0.685            
+## q04 0.290 0.402 0.339 0.899      
+## q05 0.258 0.357 0.301 0.388 0.930
+\end{verbatim}
+
+\textbf{Sample Variance-Covariance Matrix (S)}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pesquisa }\OtherTok{\textless{}{-}} \FunctionTok{data.frame}\NormalTok{(dat1[,}\DecValTok{1}\SpecialCharTok{:}\DecValTok{7}\NormalTok{])}
+\NormalTok{cov\_obs }\OtherTok{\textless{}{-}}\NormalTok{ pesquisa }\SpecialCharTok{\%\textgreater{}\%} 
+  \FunctionTok{select}\NormalTok{(q06, q07, q01, q04, q05) }
+
+  \FunctionTok{round}\NormalTok{(}\FunctionTok{cov}\NormalTok{(cov\_obs),}\DecValTok{3}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##       q06   q07   q01   q04   q05
+## q06 1.259 0.635 0.201 0.296 0.279
+## q07 0.635 1.215 0.279 0.427 0.361
+## q01 0.201 0.279 0.686 0.342 0.321
+## q04 0.296 0.427 0.342 0.900 0.367
+## q05 0.279 0.361 0.321 0.367 0.931
+\end{verbatim}
+
+\textbf{Fitted Residual Matrix} (Unstandardized Residual Matrix) This is
+simply the difference between the observed and implied covariance matrix
+and mean vector.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{residuals}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $type
+## [1] "raw"
+## 
+## $cov
+##     q06    q07    q01    q04    q05   
+## q06  0.000                            
+## q07  0.000  0.000                     
+## q01 -0.024 -0.033  0.000              
+## q04  0.006  0.025  0.004  0.000       
+## q05  0.021  0.004  0.020 -0.022  0.000
+\end{verbatim}
+
+Standardized Residual Matrix inspect or extract information from a
+fitted lavaan object
+
+``cov.ov'':The model-implied variance-covariance matrix of the observed
+variables. The \texttt{lavInspect()} and \texttt{lavTech()} functions
+can be used to inspect/extract information that is stored inside (or can
+be computed from) a fitted lavaan object
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cor\_table }\OtherTok{\textless{}{-}} \FunctionTok{inspect}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2, }\StringTok{"cov.ov"}\NormalTok{)}
+\NormalTok{cor\_table}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##     q06   q07   q01   q04   q05  
+## q06 1.258                        
+## q07 0.635 1.215                  
+## q01 0.225 0.312 0.685            
+## q04 0.290 0.402 0.339 0.899      
+## q05 0.258 0.357 0.301 0.388 0.930
+\end{verbatim}
+
+lavInspect() on a fitted lavaan object returns a list of the model
+matrices that are used internally to represent the model. The free
+parameters are nonzero integers.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{lavInspect}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2) }
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+## $lambda
+##     pcknow sttknw
+## q06      1      0
+## q07      2      0
+## q01      0      3
+## q04      0      4
+## q05      0      5
+## 
+## $theta
+##     q06 q07 q01 q04 q05
+## q06  6                 
+## q07  0   7             
+## q01  0   0   8         
+## q04  0   0   0   9     
+## q05  0   0   0   0  10 
+## 
+## $psi
+##          pcknow sttknw
+## pcknow    0           
+## statknow 11      0
+\end{verbatim}
+
+Parameters
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{parameterestimates}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##         lhs op      rhs   est    se      z pvalue ci.lower ci.upper
+## 1    pcknow =~      q06 0.677 0.026 26.260      0    0.627    0.728
+## 2    pcknow =~      q07 0.938 0.028 32.956      0    0.882    0.993
+## 3  statknow =~      q01 0.512 0.018 28.704      0    0.477    0.547
+## 4  statknow =~      q04 0.661 0.020 32.333      0    0.621    0.701
+## 5  statknow =~      q05 0.587 0.021 28.220      0    0.547    0.628
+## 6    pcknow ~~   pcknow 1.000 0.000     NA     NA    1.000    1.000
+## 7  statknow ~~ statknow 1.000 0.000     NA     NA    1.000    1.000
+## 8       q06 ~~      q06 0.800 0.031 25.496      0    0.738    0.861
+## 9       q07 ~~      q07 0.336 0.043  7.760      0    0.251    0.421
+## 10      q01 ~~      q01 0.423 0.016 26.869      0    0.392    0.454
+## 11      q04 ~~      q04 0.463 0.021 22.247      0    0.422    0.504
+## 12      q05 ~~      q05 0.585 0.021 27.350      0    0.543    0.627
+## 13   pcknow ~~ statknow 0.648 0.023 28.819      0    0.604    0.693
+\end{verbatim}
+
+Fit Mearures
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{fitmeasures}\NormalTok{(fits}\SpecialCharTok{$}\NormalTok{Latecov2)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{verbatim}
+##                npar                fmin               chisq                  df 
+##              11.000               0.005              23.935               4.000 
+##              pvalue      baseline.chisq         baseline.df     baseline.pvalue 
+##               0.000            2634.246              10.000               0.000 
+##                 cfi                 tli                nnfi                 rfi 
+##               0.992               0.981               0.981               0.977 
+##                 nfi                pnfi                 ifi                 rni 
+##               0.991               0.396               0.992               0.992 
+##                logl   unrestricted.logl                 aic                 bic 
+##          -16765.895          -16753.928           33553.790           33618.163 
+##              ntotal                bic2               rmsea      rmsea.ci.lower 
+##            2571.000           33583.212               0.044               0.028 
+##      rmsea.ci.upper        rmsea.pvalue                 rmr          rmr_nomean 
+##               0.062               0.685               0.016               0.016 
+##                srmr        srmr_bentler srmr_bentler_nomean                crmr 
+##               0.017               0.017               0.017               0.020 
+##         crmr_nomean          srmr_mplus   srmr_mplus_nomean               cn_05 
+##               0.020               0.017               0.017            1020.150 
+##               cn_01                 gfi                agfi                pgfi 
+##            1427.153               0.996               0.986               0.266 
+##                 mfi                ecvi 
+##               0.996               0.018
+\end{verbatim}
+
+\hypertarget{references}{%
+\section{References}\label{references}}
+
+\end{document}
