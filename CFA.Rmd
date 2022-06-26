@@ -1057,6 +1057,16 @@ It is well documented in CFA and SEM literature that the chi-square is often ove
 Note that scientific notation of means which is a really small number, using the model chi-square criteria alone we reject the null hypothesis that the model fits the data. 
 
 
+
+<div class="alert alert-info">
+  <strong>Chi-squared</strong> 
+**Chisq**: The model Chi-squared assesses overall fit and the discrepancy
+
+Between the sample and fitted covariance matrices. Its <u>p-value should be >.05</u> (i.e., the hypothesis of a perfect fit cannot be rejected). However, it is quite sensitive to sample size.  
+
+</div>
+
+
 ## Incremental versus absolute fit index
 
 For over-identified models, there are many types of fit indexes available to the researcher. Historically, model chi-square was the only measure of fit but in practice the null hypothesis was often rejected due to the chi-square’s heightened sensitivity under large samples. 
@@ -1164,6 +1174,14 @@ $$
 If $\delta \text{(User)}=0$, then it means that the user model is not misspecified, so the numerator becomes $\text{(Baseline)}$ and the ratio becomes 1. The closer the CFI is to 1, the better the fit of the model; with the maximum being 1. 
 
 Some criteria claims 0.90 to 0.95 as a good cutoff for good fit. 
+
+<div class="alert alert-info">
+  <strong>Comparative Fit Index</strong> 
+**CFI**: The Comparative Fit Index is a revised form of NFI. Not very sensitive to sample size (Fan, Thompson, & Wang, 1999). Compares the fit of a target model to the fit of an independent, or null, model. 
+
+<u>It should be >.90</u>. 
+
+</div>
  
 #### Tucker-Lewis (TLI)
 
@@ -1182,6 +1200,12 @@ Given the eight-item one factor model:
 $$
 TLI \, = \, \frac{4164.572/ 28-554.191 / 20}{4164.572 / 28-1} \, = \, \boxed{0.819}
 $$
+<div class="alert alert-info">
+  <strong>Tucker Lewis Index</strong> 
+**NNFI** (also called the **Tucker Lewis index**; TLI) is preferable for smaller samples. They should be <u>> .90</u> (Byrne, 1994) or <u> > .95</u> (Schumacker & Lomax,2004). 
+
+</div>
+
 ### b) Absolute
 
 #### RMSEA 
@@ -1209,11 +1233,23 @@ RMSE = \sqrt{\frac{534.191}{20(2,571-1)}}=\sqrt{0.0104}=0.102
 $$
 Our RMSEA = 0.10 indicating poor fit, as evidence by the large $\delta$ relative to the degrees of freedom.
 
+<div class="alert alert-info">
+  <strong>Root Mean Square Error Index</strong> 
+**RMSEA**: The Root Mean Square Error of Approximation is a parsimony-adjusted index. Values closer to 0 represent a good fit. <u>It should be < .08 or < .05</u>. The p-value printed with it tests the hypothesis that RMSEA is less than or equal to .05 (a cutoff sometimes used for good fit), and thus should be not significant.
+
+</div>
+
 ### SRMR
 This is a badness of fit index, the bigger the value, the worse the fit. A SMSR lower or egual to 0.05 is a good fit and between 0.05 e 0.09 is considered an adequate fit (MacCallum et al. 1996)[^2]
 
 [^2]:MACCALLUM, R. C., BROWNE, M. W., & SUGAWARA, H. M. Power analysis and determination of sample size for covariance structure modeling. Psychological Methods, 1, 130–149, 1996.
 
+<div class="alert alert-info">
+  <strong>Root Mean Square Residual Index</strong> 
+**RMR/SRMR**: the (Standardized) Root Mean Square Residual represents the square-root of the difference between the residuals of the sample covariance matrix and the hypothesized model. As the RMR can be sometimes hard to
+interpret, better to use SRMR. <u>Should be < .08</u>.
+
+</div>
 
 # INTERPRETATION
 
@@ -1334,6 +1370,7 @@ Fit Mearures
 fitmeasures(fits$Latecov2)
 
 ```
+
 
 
 
