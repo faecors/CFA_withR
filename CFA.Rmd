@@ -1370,7 +1370,12 @@ Fit Mearures
 fitmeasures(fits$Latecov2)
 
 ```
-
+```{r}
+parameterEstimates(fits$Latecov2, standardized=TRUE) %>% 
+  filter(op == "=~") %>% 
+  select('Latent Fac'=lhs, Indicator=rhs, B=est, SE=se, Z=z, 'p-value'=pvalue, Beta=std.all) %>% 
+  knitr::kable(digits = 3, format="markdown", booktabs=TRUE, caption="Factor Loadings")
+```
 
 
 

@@ -248,7 +248,7 @@ div.tocify {
 
 <h1 class="title toc-ignore">CFA with R (<code>lavaan</code>)</h1>
 <h4 class="author">Rafael Pentiado Poerschke</h4>
-<h4 class="date">24 Junho, 2022</h4>
+<h4 class="date">26 Junho, 2022</h4>
 
 </div>
 
@@ -1297,8 +1297,8 @@ t \quad \leq \quad \frac{1}{2}(p)(p+1)
 <p>Suppose the principal investigator thinks that the q1, q4 and q5 items of the SAQ are the observed indicators of <u>Statknow</u>. To obtain the sample covariance matrix <span class="math inline">\(\mathbf{S}=\mathbf{\Sigma}\)</span>, which is an estimate of the population covariance matrix <span class="math inline">\(\mathbf{\Sigma}\)</span>, use the command <code>select</code>, choose the interest columns, and the command <code>cov</code>. The function round with the option 2 specifies that we want to round the numbers to the second digit.</p>
 <p>The <strong>known values</strong> serve as the primary restriction in terms of <strong>how many total parameters we are able to estimate</strong>. The known values serve as the upper limit of the number of parameters you can possibly estimate in our model. The parameters coming from the model are called model parameters and are calculates with (3).</p>
 <p><span class="math display">\[
-\tag{3}
-\text{n. parameters}\;=\quad pq\; +\; \frac{(q)(q+1)}{2} \;+\;\frac{(p)(p+1)}{2}
+\boxed{\tag{3}
+\text{n. parameters}\;=\quad pq\; +\; \frac{(q)(q+1)}{2} \;+\;\frac{(p)(p+1)}{2}}
 \]</span> for <span class="math inline">\(p\)</span> variables and <span class="math inline">\(q\)</span> factors (latent).</p>
 <pre class="r"><code>latent &lt;- select(dat1, q06, q07, q01, q04, q05)
 round(cov(latent[,]),2)</code></pre>
@@ -1576,7 +1576,7 @@ fits$Latecov2 &lt;- lavaan::cfa(myModels$Latecov2, data = dat1, std.lv=FALSE)</c
 <p>Generally, chi-square is used as an <strong>absolute fit index</strong>, with a low chi-square value relative to the degrees of freedom (and higher p-value) indicating better model fit. Since the test is used to reject a null hypothesis representing perfect fit, chi-square is often referred to as a <strong>‘badness of fit’</strong> or <strong>‘lack of fit index’</strong>(ALAVI et al. )<a href="#fn9" class="footnote-ref" id="fnref9"><sup>9</sup></a>.</p>
 <p>The model chi-square is defined as <span class="math inline">\(nF_{ml}\)</span>, and the <span class="math inline">\(F_{ml}\)</span> is the fit function from maximum likelihood</p>
 <p><span class="math display">\[
-F_{ml}\,=\,log|\mathbf{\hat{\Sigma}(\theta)}|+tr(\mathbf{S}\mathbf{\hat{\Sigma}^{-1}(\theta)})-log|\mathbf{S}|-(p+q)
+\boxed{F_{ml}\,=\,log|\mathbf{\hat{\Sigma}(\theta)}|+tr(\mathbf{S}\mathbf{\hat{\Sigma}^{-1}(\theta)})-log|\mathbf{S}|-(p+q)}
 \]</span> with <span class="math inline">\(n\)</span> as sample size, <span class="math inline">\(p\)</span> exogenous variables, and <span class="math inline">\(q\)</span> is the number of endogenous variables. So it`s <span class="math inline">\(nF_{ml}\,\chi^{2}\, \sim \, (df_{\text{user}})\)</span>.</p>
 <p>The Test Statistic is relatively large (23.935) and there is an additional row with P-value (Chi-square) indicating that we reject the null hypothesis.</p>
 <pre class="r"><code>#Eight Item Two-Factor CFA and Latent Covs = 1 (Over-Identified)
@@ -1634,6 +1634,10 @@ pchisq(q=23.935,df=4,lower.tail=FALSE)</code></pre>
 <p>Since <span class="math inline">\(p&lt;0.05\)</span>, using the model chi-square criteria alone we reject the null hypothesis that the model fits the data.</p>
 <p>It is well documented in CFA and SEM literature that the chi-square is often overly sensitive in model testing especially for large samples. For models with 75 to 200 cases chi-square is a reasonable measure of fit. Since the power of the model are positively correlated to the size of the sample (like in regression that we want to reject the null hypothesis), for 400 cases or more it is nearly almost always significant.</p>
 <p>Note that scientific notation of means which is a really small number, using the model chi-square criteria alone we reject the null hypothesis that the model fits the data.</p>
+<div class="alert alert-info">
+<p><strong>Chi-squared</strong> <strong>Chisq</strong>: The model Chi-squared assesses overall fit and the discrepancy</p>
+<p>Between the sample and fitted covariance matrices. Its <u>p-value should be &gt;.05</u> (i.e., the hypothesis of a perfect fit cannot be rejected). However, it is quite sensitive to sample size.</p>
+</div>
 </div>
 <div id="incremental-versus-absolute-fit-index" class="section level2" number="5.3">
 <h2><span class="header-section-number">5.3</span> Incremental versus absolute fit index</h2>
@@ -1717,7 +1721,7 @@ summary(onefac3items_base) </code></pre>
 <p>Let <span class="math inline">\(\boxed{\delta=\chi^{2}-df}\)</span> where <span class="math inline">\(df\)</span> is the degrees of freedom for that particular model.</p>
 <p>The closer <span class="math inline">\(\delta\)</span> is to zero, the more the model fits the data.</p>
 <p>The formula for the CFI is: <span class="math display">\[
-CFI = \frac{\delta \text{(Baseline)}-\delta \text{(User)}}{\delta \text{(Baseline)}}
+\boxed{CFI = \frac{\delta \text{(Baseline)}-\delta \text{(User)}}{\delta \text{(Baseline)}}}
 \]</span></p>
 <p>To manually calculate the CFI, recall two factor model:</p>
 <p>Now, we will estimate our <strong>model</strong>:</p>
@@ -1812,7 +1816,12 @@ summary(onefac8items_a, fit.measures=TRUE, standardized=TRUE)</code></pre>
 <p><span class="math display">\[
 CFI \, = \, \frac{4136.572-534.191}{4136.572} \, = \, \frac{3602.381}{4136.572} \, = \, 0.871
 \]</span></p>
-<p>If <span class="math inline">\(\delta \text{(User)}=0\)</span>, then it means that the user model is not misspecified, so the numerator becomes <span class="math inline">\(\text{(Baseline)}\)</span> and the ratio becomes 1. The closer the CFI is to 1, the better the fit of the model; with the maximum being 1. Some criteria claims 0.90 to 0.95 as a good cutoff for good fit [citation needed].</p>
+<p>If <span class="math inline">\(\delta \text{(User)}=0\)</span>, then it means that the user model is not misspecified, so the numerator becomes <span class="math inline">\(\text{(Baseline)}\)</span> and the ratio becomes 1. The closer the CFI is to 1, the better the fit of the model; with the maximum being 1.</p>
+<p>Some criteria claims 0.90 to 0.95 as a good cutoff for good fit.</p>
+<div class="alert alert-info">
+<p><strong>Comparative Fit Index</strong> <strong>CFI</strong>: The Comparative Fit Index is a revised form of NFI. Not very sensitive to sample size (Fan, Thompson, &amp; Wang, 1999). Compares the fit of a target model to the fit of an independent, or null, model.</p>
+<p><u>It should be &gt;.90</u>.</p>
+</div>
 </div>
 <div id="tucker-lewis-tli" class="section level4" number="5.4.2.2">
 <h4><span class="header-section-number">5.4.2.2</span> Tucker-Lewis (TLI)</h4>
@@ -1820,10 +1829,14 @@ CFI \, = \, \frac{4136.572-534.191}{4136.572} \, = \, \frac{3602.381}{4136.572} 
 <p>TLI which also ranges between 0 and 1 (if it’s greater than 1 it should be rounded to 1) with values greater than 0.90 indicating good fit. If the CFI and TLI are less than one, the CFI is always greater than the TLI.</p>
 <p>The TLI formula is defined like: <span class="math display">\[
 TLI \, = \, \frac{min[\chi^2 \text{(Baseline)} / df \text{(Baseline)},1]-min[\chi^2 \text{(User)} / df  \text{(User)},1]}{min[\chi^2 \text{(Baseline)} / df \text{(Baseline)},1]-1}
-\]</span> In the denominator we have a 1 since <span class="math inline">\(\chi^2 \text{(Satureted)}=0\)</span> and <span class="math inline">\(df \text{(Satureted)}=0\)</span> implies that <span class="math inline">\(min(\chi^2 \text{(Satureted)}/df\text{(Satureted)},1)=1\)</span>. Also, the TLI can be greater than 1 but for practical purposes we round it to 1. Given the eight-item one factor model:</p>
-<p><span class="math display">\[
-TLI \, = \, \frac{4164.572/ 28-554.191 / 20}{4164.572 / 28-1} \, = \, 0.819
-\]</span></p>
+\]</span> In the denominator we have a 1 since <span class="math inline">\(\chi^2 \text{(Satureted)}=0\)</span> and <span class="math inline">\(df \text{(Satureted)}=0\)</span> implies that <span class="math inline">\(min(\chi^2 \text{(Satureted)}/df\text{(Satureted)},1)=1\)</span>. Also, the TLI can be greater than 1 but for practical purposes we round it to 1.</p>
+<p>Given the eight-item one factor model:</p>
+<span class="math display">\[
+TLI \, = \, \frac{4164.572/ 28-554.191 / 20}{4164.572 / 28-1} \, = \, \boxed{0.819}
+\]</span>
+<div class="alert alert-info">
+<p><strong>Tucker Lewis Index</strong> <strong>NNFI</strong> (also called the <strong>Tucker Lewis index</strong>; TLI) is preferable for smaller samples. They should be <u>&gt; .90</u> (Byrne, 1994) or <u> &gt; .95</u> (Schumacker &amp; Lomax,2004).</p>
+</div>
 </div>
 </div>
 <div id="b-absolute" class="section level3" number="5.4.3">
@@ -1832,7 +1845,7 @@ TLI \, = \, \frac{4164.572/ 28-554.191 / 20}{4164.572 / 28-1} \, = \, 0.819
 <h4><span class="header-section-number">5.4.3.1</span> RMSEA</h4>
 <p>RMSEA is the root mean square error of approximation. The root mean square error of approximation is an absolute measure of fit because it does not compare the discrepancy of the user model relative to a baseline model like the CFI or TLI. Instead, RMSEA defines <span class="math inline">\(\delta\)</span> as the non-centrality parameter which measures the <strong>degree of misspecification</strong>. Recall from the CFI that <span class="math inline">\(\delta=\chi^2-df\)</span> where <span class="math inline">\(df\)</span> is the degrees of freedom for that particular model. The greater the <span class="math inline">\(\delta\)</span> the more misspefied the model.</p>
 <p><span class="math display">\[
-RMSE = \sqrt{\frac{\delta}{df(n-1)}}
+\boxed{RMSE = \sqrt{\frac{\delta}{df(n-1)}}}
 \]</span> where <span class="math inline">\(n\)</span> is the total number of observations. The cutoff criteria as defined in Kline (2016, p.274-275)</p>
 <div class="alert alert-info">
 <p><strong>Table!</strong></p>
@@ -1846,11 +1859,17 @@ RMSE = \sqrt{\frac{\delta}{df(n-1)}}
 <p><span class="math display">\[
 RMSE = \sqrt{\frac{534.191}{20(2,571-1)}}=\sqrt{0.0104}=0.102
 \]</span> Our RMSEA = 0.10 indicating poor fit, as evidence by the large <span class="math inline">\(\delta\)</span> relative to the degrees of freedom.</p>
+<div class="alert alert-info">
+<p><strong>Root Mean Square Error Index</strong> <strong>RMSEA</strong>: The Root Mean Square Error of Approximation is a parsimony-adjusted index. Values closer to 0 represent a good fit. <u>It should be &lt; .08 or &lt; .05</u>. The p-value printed with it tests the hypothesis that RMSEA is less than or equal to .05 (a cutoff sometimes used for good fit), and thus should be not significant.</p>
+</div>
 </div>
 </div>
 <div id="srmr" class="section level3" number="5.4.4">
 <h3><span class="header-section-number">5.4.4</span> SRMR</h3>
 <p>This is a badness of fit index, the bigger the value, the worse the fit. A SMSR lower or egual to 0.05 is a good fit and between 0.05 e 0.09 is considered an adequate fit (MacCallum et al. 1996)<a href="#fn10" class="footnote-ref" id="fnref10"><sup>10</sup></a></p>
+<div class="alert alert-info">
+<p><strong>Root Mean Square Residual Index</strong> <strong>RMR/SRMR</strong>: the (Standardized) Root Mean Square Residual represents the square-root of the difference between the residuals of the sample covariance matrix and the hypothesized model. As the RMR can be sometimes hard to interpret, better to use SRMR. <u>Should be &lt; .08</u>.</p>
+</div>
 </div>
 </div>
 </div>
@@ -2202,6 +2221,71 @@ cor_table</code></pre>
 ##            1427.153               0.996               0.986               0.266 
 ##                 mfi                ecvi 
 ##               0.996               0.018</code></pre>
+<pre class="r"><code>parameterEstimates(fits$Latecov2, standardized=TRUE) %&gt;% 
+  filter(op == &quot;=~&quot;) %&gt;% 
+  select(&#39;Latent Fac&#39;=lhs, Indicator=rhs, B=est, SE=se, Z=z, &#39;p-value&#39;=pvalue, Beta=std.all) %&gt;% 
+  knitr::kable(digits = 3, format=&quot;markdown&quot;, booktabs=TRUE, caption=&quot;Factor Loadings&quot;)</code></pre>
+<table>
+<caption>Factor Loadings</caption>
+<thead>
+<tr class="header">
+<th align="left">Latent Fac</th>
+<th align="left">Indicator</th>
+<th align="right">B</th>
+<th align="right">SE</th>
+<th align="right">Z</th>
+<th align="right">p-value</th>
+<th align="right">Beta</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">pcknow</td>
+<td align="left">q06</td>
+<td align="right">0.677</td>
+<td align="right">0.026</td>
+<td align="right">26.260</td>
+<td align="right">0</td>
+<td align="right">0.604</td>
+</tr>
+<tr class="even">
+<td align="left">pcknow</td>
+<td align="left">q07</td>
+<td align="right">0.938</td>
+<td align="right">0.028</td>
+<td align="right">32.956</td>
+<td align="right">0</td>
+<td align="right">0.851</td>
+</tr>
+<tr class="odd">
+<td align="left">statknow</td>
+<td align="left">q01</td>
+<td align="right">0.512</td>
+<td align="right">0.018</td>
+<td align="right">28.704</td>
+<td align="right">0</td>
+<td align="right">0.619</td>
+</tr>
+<tr class="even">
+<td align="left">statknow</td>
+<td align="left">q04</td>
+<td align="right">0.661</td>
+<td align="right">0.020</td>
+<td align="right">32.333</td>
+<td align="right">0</td>
+<td align="right">0.697</td>
+</tr>
+<tr class="odd">
+<td align="left">statknow</td>
+<td align="left">q05</td>
+<td align="right">0.587</td>
+<td align="right">0.021</td>
+<td align="right">28.220</td>
+<td align="right">0</td>
+<td align="right">0.609</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 <div id="references" class="section level1" number="7">
