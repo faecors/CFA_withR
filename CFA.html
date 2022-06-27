@@ -2221,68 +2221,185 @@ cor_table</code></pre>
 ##            1427.153               0.996               0.986               0.266 
 ##                 mfi                ecvi 
 ##               0.996               0.018</code></pre>
-<pre class="r"><code>parameterEstimates(fits$Latecov2, standardized=TRUE) %&gt;% 
+<pre class="r"><code>parameterEstimates(fits$Latecov2, standardized=TRUE)</code></pre>
+<pre><code>##         lhs op      rhs   est    se      z pvalue ci.lower ci.upper std.lv
+## 1    pcknow =~      q06 0.677 0.026 26.260      0    0.627    0.728  0.677
+## 2    pcknow =~      q07 0.938 0.028 32.956      0    0.882    0.993  0.938
+## 3  statknow =~      q01 0.512 0.018 28.704      0    0.477    0.547  0.512
+## 4  statknow =~      q04 0.661 0.020 32.333      0    0.621    0.701  0.661
+## 5  statknow =~      q05 0.587 0.021 28.220      0    0.547    0.628  0.587
+## 6    pcknow ~~   pcknow 1.000 0.000     NA     NA    1.000    1.000  1.000
+## 7  statknow ~~ statknow 1.000 0.000     NA     NA    1.000    1.000  1.000
+## 8       q06 ~~      q06 0.800 0.031 25.496      0    0.738    0.861  0.800
+## 9       q07 ~~      q07 0.336 0.043  7.760      0    0.251    0.421  0.336
+## 10      q01 ~~      q01 0.423 0.016 26.869      0    0.392    0.454  0.423
+## 11      q04 ~~      q04 0.463 0.021 22.247      0    0.422    0.504  0.463
+## 12      q05 ~~      q05 0.585 0.021 27.350      0    0.543    0.627  0.585
+## 13   pcknow ~~ statknow 0.648 0.023 28.819      0    0.604    0.693  0.648
+##    std.all std.nox
+## 1    0.604   0.604
+## 2    0.851   0.851
+## 3    0.619   0.619
+## 4    0.697   0.697
+## 5    0.609   0.609
+## 6    1.000   1.000
+## 7    1.000   1.000
+## 8    0.635   0.635
+## 9    0.276   0.276
+## 10   0.617   0.617
+## 11   0.515   0.515
+## 12   0.629   0.629
+## 13   0.648   0.648</code></pre>
+<p><strong>Nice Table with kableExtra</strong></p>
+<pre class="r"><code>parameterEstimates(fits$Latecov2, standardized=TRUE) %&gt;%
   filter(op == &quot;=~&quot;) %&gt;% 
   select(&#39;Latent Fac&#39;=lhs, Indicator=rhs, B=est, SE=se, Z=z, &#39;p-value&#39;=pvalue, Beta=std.all) %&gt;% 
-  knitr::kable(digits = 3, format=&quot;markdown&quot;, booktabs=TRUE, caption=&quot;Factor Loadings&quot;)</code></pre>
-<table>
-<caption>Factor Loadings</caption>
+  kable(digits = 3, caption=&quot;Factor Loadings&quot;) %&gt;%
+  kable_styling(full_width = FALSE, bootstrap_options = c(&quot;striped&quot;, &quot;hover&quot;, &quot;responsive&quot;, &quot;condensed&quot;))</code></pre>
+<table class="table table-striped table-hover table-responsive table-condensed" style="width: auto !important; margin-left: auto; margin-right: auto;">
+<caption>
+Factor Loadings
+</caption>
 <thead>
-<tr class="header">
-<th align="left">Latent Fac</th>
-<th align="left">Indicator</th>
-<th align="right">B</th>
-<th align="right">SE</th>
-<th align="right">Z</th>
-<th align="right">p-value</th>
-<th align="right">Beta</th>
+<tr>
+<th style="text-align:left;">
+Latent Fac
+</th>
+<th style="text-align:left;">
+Indicator
+</th>
+<th style="text-align:right;">
+B
+</th>
+<th style="text-align:right;">
+SE
+</th>
+<th style="text-align:right;">
+Z
+</th>
+<th style="text-align:right;">
+p-value
+</th>
+<th style="text-align:right;">
+Beta
+</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">pcknow</td>
-<td align="left">q06</td>
-<td align="right">0.677</td>
-<td align="right">0.026</td>
-<td align="right">26.260</td>
-<td align="right">0</td>
-<td align="right">0.604</td>
+<tr>
+<td style="text-align:left;">
+pcknow
+</td>
+<td style="text-align:left;">
+q06
+</td>
+<td style="text-align:right;">
+0.677
+</td>
+<td style="text-align:right;">
+0.026
+</td>
+<td style="text-align:right;">
+26.260
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.604
+</td>
 </tr>
-<tr class="even">
-<td align="left">pcknow</td>
-<td align="left">q07</td>
-<td align="right">0.938</td>
-<td align="right">0.028</td>
-<td align="right">32.956</td>
-<td align="right">0</td>
-<td align="right">0.851</td>
+<tr>
+<td style="text-align:left;">
+pcknow
+</td>
+<td style="text-align:left;">
+q07
+</td>
+<td style="text-align:right;">
+0.938
+</td>
+<td style="text-align:right;">
+0.028
+</td>
+<td style="text-align:right;">
+32.956
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.851
+</td>
 </tr>
-<tr class="odd">
-<td align="left">statknow</td>
-<td align="left">q01</td>
-<td align="right">0.512</td>
-<td align="right">0.018</td>
-<td align="right">28.704</td>
-<td align="right">0</td>
-<td align="right">0.619</td>
+<tr>
+<td style="text-align:left;">
+statknow
+</td>
+<td style="text-align:left;">
+q01
+</td>
+<td style="text-align:right;">
+0.512
+</td>
+<td style="text-align:right;">
+0.018
+</td>
+<td style="text-align:right;">
+28.704
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.619
+</td>
 </tr>
-<tr class="even">
-<td align="left">statknow</td>
-<td align="left">q04</td>
-<td align="right">0.661</td>
-<td align="right">0.020</td>
-<td align="right">32.333</td>
-<td align="right">0</td>
-<td align="right">0.697</td>
+<tr>
+<td style="text-align:left;">
+statknow
+</td>
+<td style="text-align:left;">
+q04
+</td>
+<td style="text-align:right;">
+0.661
+</td>
+<td style="text-align:right;">
+0.020
+</td>
+<td style="text-align:right;">
+32.333
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.697
+</td>
 </tr>
-<tr class="odd">
-<td align="left">statknow</td>
-<td align="left">q05</td>
-<td align="right">0.587</td>
-<td align="right">0.021</td>
-<td align="right">28.220</td>
-<td align="right">0</td>
-<td align="right">0.609</td>
+<tr>
+<td style="text-align:left;">
+statknow
+</td>
+<td style="text-align:left;">
+q05
+</td>
+<td style="text-align:right;">
+0.587
+</td>
+<td style="text-align:right;">
+0.021
+</td>
+<td style="text-align:right;">
+28.220
+</td>
+<td style="text-align:right;">
+0
+</td>
+<td style="text-align:right;">
+0.609
+</td>
 </tr>
 </tbody>
 </table>

@@ -1371,10 +1371,16 @@ fitmeasures(fits$Latecov2)
 
 ```
 ```{r}
-parameterEstimates(fits$Latecov2, standardized=TRUE) %>% 
+parameterEstimates(fits$Latecov2, standardized=TRUE)
+```
+
+**Nice Table with kableExtra**
+```{r}
+parameterEstimates(fits$Latecov2, standardized=TRUE) %>%
   filter(op == "=~") %>% 
   select('Latent Fac'=lhs, Indicator=rhs, B=est, SE=se, Z=z, 'p-value'=pvalue, Beta=std.all) %>% 
-  knitr::kable(digits = 3, format="markdown", booktabs=TRUE, caption="Factor Loadings")
+  kable(digits = 3, caption="Factor Loadings") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "responsive", "condensed"))
 ```
 
 
