@@ -30,6 +30,8 @@ library(rstatix)
 library(foreign)
 library(psych)
 library(tinytex)
+library(EnvStats)
+library(corrplot)
 ```
 
 **The `getwd()` returns an absolute filepath representing the current working directory of the R process;**
@@ -150,6 +152,12 @@ The `kable` package allows fancier tables, what enable a clear visualization and
 ```{r, Correlation dat1}
 kable(round(cor(dat[,1:8]),2)) %>%
   kable_styling(full_width = F, bootstrap_options = c("striped", "hover", "condensed", "responsive"))
+```
+```{r}
+mat1 <- cor(dat1[,1:8])
+corrplot(mat1,type="upper",tl.pos="tp")
+corrplot(mat1,add=T,type="lower", method="number",
+col="black", diag=FALSE,tl.pos="n", cl.pos="n")
 ```
 
 **Covariance-Variance Table**
@@ -742,9 +750,21 @@ summary(fits$m4)
 
 ## Degrees of Freedom
 
-Then, $\mathbf{\Sigma}(\theta)$ is decomposed into $\mathbf{\Lambda_{x}}$ matrix that has $pq$ elements; $\Phi$ has $(q)(q+1)/2$ nonredundant parameters, and  $\mathbf{\Theta}_{\varepsilon}$ has $(p)(p+1)/2$ parameters. 
+Then, $\mathbf{\Sigma}(\theta)$ is decomposed into:
 
-Thus $\mathbf{\Sigma}(\theta)$ is decomposed into $pq\; +\; (q)(q+1)/2 \;+\;(p)(p+1)/2$ parameters. With $p$ variables in $\mathbf{X}$, $\mathbf{\Sigma}$ has $(p)(p+1)/2$ **know-to-be-identified** elements. 
++ $\mathbf{\Lambda_{x}}$ matrix that has $pq$ elements; 
+
++ $\Phi$ has $(q)(q+1)/2$ nonredundant parameters, and
+
++ $\mathbf{\Theta}_{\varepsilon}$ has $(p)(p+1)/2$ parameters. 
+
+Thus $\mathbf{\Sigma}(\theta)$ is decomposed into:
+
+$$
+\boxed{pq\; +\; (q)(q+1)/2 \;+\;(p)(p+1)/2 \quad \quad \text{parameters.}}
+$$  
+
+With $p$ variables in $\mathbf{X}$, $\mathbf{\Sigma}$ has $(p)(p+1)/2$ **know-to-be-identified** elements. 
 
 So the number of **free parameters** in ($t$) must be less than or equal to the number of unique elements in the covariance matrix of $\mathbf{X}$. 
 
@@ -761,22 +781,27 @@ In regression models, identification is never an issue, just because they are al
 
 The concept of a **fixed** or **free parameter** is essential in CFA. The total number of parameters in a CFA model is determined by the number of **known values ** **($kv$)** in your population variance-covariance matrix $\Sigma$, given by the formula $(2)$ where $p$ is the number of items/manifest variables in your survey. 
 
-Suppose the principal investigator thinks that the q1, q4 and q5 items of the SAQ are the observed indicators of <u>Statknow</u>. To obtain the sample covariance matrix $\mathbf{S}=\mathbf{\Sigma}$, which is an estimate of the population covariance matrix $\mathbf{\Sigma}$, use the command `select`, choose the interest columns, and the command `cov`. The function round with the option 2 specifies that we want to round the numbers to the second digit.
-
 The **known values** serve as the primary restriction in terms of **how many total parameters we are able to estimate**. The known values serve as the upper limit of the number of parameters you can possibly estimate in our model. The parameters coming from the model are called model parameters and are calculates with (3). 
 
 $$
-\boxed{\tag{3}
-\text{n. parameters}\;=\quad pq\; +\; \frac{(q)(q+1)}{2} \;+\;\frac{(p)(p+1)}{2}}
+\tag{3} \boxed{ \text{n. parameters}\;=\quad pq\; +\; \frac{(q)(q+1)}{2} \;+\;\frac{(p)(p+1)}{2} }
 $$
 for $p$ variables and $q$ factors (latent).
+
+Suppose the principal investigator thinks that the q1, q4 and q5 items of the SAQ are the observed indicators of <u>Statknow</u>. To obtain the sample covariance matrix $\mathbf{S}=\mathbf{\Sigma}$, which is an estimate of the population covariance matrix $\mathbf{\Sigma}$, use the command `select`, choose the interest columns, and the command `cov`. The function round with the option 2 specifies that we want to round the numbers to the second digit.
 ```{r}
 latent <- select(dat1, q06, q07, q01, q04, q05)
 round(cov(latent[,]),2)
 ```
 
-For the model of `statknow =~ q01 + q04 + q05` we have three items, so 3(3+1)/2 = 6 (since by symmetry, $\theta_{12}=\theta_{21},\, \theta_{13}=\theta_{31},\, \theta_{23}=\theta_{32}$) <u>known values</u> from the var-cov matrix, one parameter from $y$ latent variable $\psi_{11}$ and 3 more parameters from $\lambda$'s. In total we have 10 total parameters, but we just have only 6 known values. 
+For the model of `statknow =~ q01 + q04 + q05` we have three items, so 3(3+1)/2 = 6 (since by symmetry, $\theta_{12}=\theta_{21},\, \theta_{13}=\theta_{31},\, \theta_{23}=\theta_{32}$) <u>known values</u> from the var-cov matrix.
 
+Total parameters: one parameter from $y$ latent variable $\psi_{11}$ and 3 more parameters from $\lambda$'s. In total we have 10 **total parameters**, but we just have only 6 **known values**. 
+
+$$
+\boxed{ \text{n. parameters}\;=\quad 3 \times 1\; +\; \frac{(1)(1+1)}{2} \;+\;\frac{(3)(3+1)}{2} = \quad 10}
+$$
+Let's check the equation:
 $$
 \begin{equation}
 \tag{4}
@@ -799,8 +824,11 @@ $$
             }_{\mathbf{residual \; covariance}}
 \end{equation}
 $$
-The unique parameters in the model (4) are 10 (6 var-cov, 3 loadings e 1 factor var). Observe that we don`t have a fixed parameter. Not good, model is <u>under identified</u> (can find solution). And changing for four items and one LV?
+The unique parameters in the model (4) are 10 (6 var-cov, 3 loadings e 1 factor var). Observe that we don`t have a fixed parameter (identification rules). 
 
+Not good, model is <u>under identified</u> (can find solution). 
+
+And changing for four items and one LV?
 $$
 \begin{equation}
 \tag{8}
@@ -825,7 +853,7 @@ $$
             }_{\mathbf{residual \; covariance}}
 \end{equation}
 $$
-For four items we will have ten pieces of non-redundant information: 4(4+1)/2 = 10. So, if the none of their error variances covary, we have 10 of unique parameters, and 9 number of fixed parameters (4 loadings, 4 variances and one variance of the factor ($\psi_{11}$).
+For four items we will have **ten pieces** of non-redundant information: 4(4+1)/2 = 10. So, if the none of their error variances covary, we have 10 of unique parameters, and 9 number of fixed parameters (4 loadings, 4 variances and one variance of the factor ($\psi_{11}$).
 So we have a model overidentified.
 
 <div class="alert alert-info">
@@ -838,7 +866,7 @@ So, the
 
 <div class="alert alert-info">
   <strong>Degrees of Freedom</strong> 
-  
+
 <u>degrees of freedom (**df**) </u> = numb. of known values - number of free parameters
 </div>
 
@@ -864,15 +892,14 @@ How it is a latent variable, which is right metric for it?
 ($b^{*}$): better when comparing coefficients within the same model\
 
 **b) unstandardized** ($b$) (natural metric): comparing coefficients for the
-same variable relationships across samples or meaningful raw score units
-(dollar, height, age).
+same variable relationships across samples or meaningful raw score units (dollar, height, age).
 
 
 We have two ways to identify the model
 
 ### Marked variable method
 
-**Fixing the loads**: This method requires a single factor loading for each LV be constrained to an arbitrary value (usually the first one). Fixes the first loading (default in R) of the first factors. We set the scale to that item to everything else. 
+**Fixing the loads**: This method requires a single factor loading for each LV be constrained to an arbitrary value (usually the first one). Fixes the first loading (default in R) of the factors. <u>We set the scale to that item to everything else</u>. 
 
 **Usage:** You can use when you have the same scale items before...
 
@@ -982,16 +1009,43 @@ fits$Latecov2 <- lavaan::cfa(myModels$Latecov2, data = dat1, std.lv=FALSE)
 
 Now what is it doing? 
 
-Lavaan use as default marker method, so we have to override it freeing the first parameter (`NA`) of it. The syntax `NA*read` frees the loading of the first item because by default marker method fixes it to one. And then we have to fix variance to one, and **double till** means the variance of the factor - `pcknow ~~ 1*pcknow`. There is no blank row in estimated variables, and the $pcknow = statknow = 1$ in estimate variances. For one <u>standard deviation</u> increase in **Pcknow**,  *q6* goes up 0.68 points.
+Lavaan use as default marker method, so we have to override it freeing the first parameter (`NA`) of it. The syntax `NA*read` frees the loading of the first item because by default marker method fixes it to one. And then we have to fix variance to one, and **double till** means the variance of the factor - `pcknow ~~ 1*pcknow`. 
+
+There is no blank row in estimated variables, and the $pcknow = statknow = 1$ in estimate variances. For one <u>standard deviation</u> increase in **Pcknow**,  *q6* goes up 0.68 points.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 semPaths(fits$Latecov2, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE)  
 ```
 ```{r, sumLatecov2}
-lavaan::summary(fits$Latecov2)
+lavaan::summary(fits$Latecov2, standardized=TRUE)
 
 ```
+**Parameters**
+```{r}
+parameterEstimates(fits$Latecov2, standardized=TRUE)
+```
 
+**Nice Table with kableExtra**
+```{r}
+parameterEstimates(fits$Latecov2, standardized=TRUE) %>%
+  filter(op == "=~") %>% 
+  select('Latent Fac'=lhs, Indicator=rhs, B=est, SE=se, Z=z, 'p-value'=pvalue, Beta=std.all) %>% 
+  kable(digits = 3, caption="Factor Loadings") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "responsive", "condensed"))
+```
+
+Residuals
+```{r}
+# extract the residuals from the fit1 model
+# get rid of the duplicates and diagonal values
+# create a vector for a 
+#EnvStats pack
+res1 <- residuals(fits$Latecov2, type = "cor")$cov
+res1[upper.tri(res1,diag=T)] <- NA
+v1 <- as.vector(res1)
+v2 <- v1[!is.na(v1)]
+qqPlot(v2,add.line = TRUE)
+```
 
 # EVALUATION: Fit Statistics
 
@@ -1282,7 +1336,7 @@ Comparing the two solutions, the loadings and variance of the factors are differ
 **Interpretation**
 ~~~
 
-I mean,  for one standard deviation in **q6**, **Pcknow** goes up to 0.604 standard deviation units.
+I mean,  for one standard deviation in **Pcknow**, **q6**  goes up to 0.604 standard deviation units.
 ~~~
 ```{r, resumo intercept}
 #two factors, variance std and intercept 
@@ -1305,10 +1359,20 @@ fits$Latecov2_intercept <- lavaan::cfa(myModels$Latecov2_intercept, data = dat1,
 summary(fits$Latecov2_intercept,standardized=TRUE, fit.measures=TRUE)
 ```
 Since we have the correlation between factor and indicators, <u>squaring a completely standardized factor loading</u> provides the proportion of variance in the indicator that is explained by the latent factor. For example, **pcknow** accounts for 36,5\% of the variance in the indicator **q6** ($0,604^{2}=0,3648$). So, 63\% ($1-0,604^{2}=0.6352$) of the observed variance in **q6** is estimated to be <u>unique</u> or error variance.
+
+
+**Introducing intercepts**
+
 ```{r, path for intercept}
 semPaths(fits$Latecov2_intercept, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE)
 ```
-
+```{r}
+parameterEstimates(fits$Latecov2_intercept, standardized=TRUE) %>%
+  filter(op == "=~") %>% 
+  select('Latent Fac'=lhs, Indicator=rhs, B=est, SE=se, Z=z, 'p-value'=pvalue, Beta=std.all) %>% 
+  kable(digits = 3, caption="Factor Loadings") %>%
+  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "responsive", "condensed"))
+```
 ## Modification Index
 
 The Modification Index reflects an approximation of how much the overall model $\chi^{2}$ would decrease in the fixed or constrained parameter was freely estimated.
@@ -1365,23 +1429,12 @@ Parameters
 parameterestimates(fits$Latecov2)
 
 ```
-Fit Mearures
+**Fit Mearures**
 ```{r}
 fitmeasures(fits$Latecov2)
 
 ```
-```{r}
-parameterEstimates(fits$Latecov2, standardized=TRUE)
-```
 
-**Nice Table with kableExtra**
-```{r}
-parameterEstimates(fits$Latecov2, standardized=TRUE) %>%
-  filter(op == "=~") %>% 
-  select('Latent Fac'=lhs, Indicator=rhs, B=est, SE=se, Z=z, 'p-value'=pvalue, Beta=std.all) %>% 
-  kable(digits = 3, caption="Factor Loadings") %>%
-  kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "responsive", "condensed"))
-```
 
 
 
