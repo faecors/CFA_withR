@@ -205,7 +205,7 @@ pca_set2 <- prcomp(dat1 [,1:8],  scale = FALSE)  #ira normalizar os dados com o 
 
 round(pca_set2$rotation, 3) #componentes criados
 ```
-## Factor Analysis
+## Exploratory Factor Analysis
 
 We can apply a complementary technique, i.e. Factor Analysis. 
 Note that the **X** matrix is now on the left side, and **L** is the matrix of factor loadings. 
@@ -216,9 +216,9 @@ $$
 \mathbf {L}_{p \times m}\:\mathbf {F}_{m \times 1}\: + \:
 \epsilon_{p \times 1}
 $$
-O modelo acima postula que a variação das variáveis observadas são dependentes de algumas variáveis aleatórias não observáveis e estimáveis  $F_{1},\: F_{2},\: \ldots, \:F_{q}$, chamadas de \textit{fatores comuns}, com um adicional de “$p$” fontes de variações $\varepsilon_{1},\:\varepsilon_{2},\: \ldots, \:\varepsilon_{p}$, chamados de \textit{fatores específicos} ou \textit{únicos} – essa denominação faz referência a sua associação única com cada variável.
+The model above points that the observed variables variation depends on certain aleatory variable not direct observed, but we are able to estimate it as $F_{1},\: F_{2},\: \ldots, \:F_{q}$, and they are called \textit{Commom factors}. The model includes “$p$” sources of variations $\varepsilon_{1},\:\varepsilon_{2},\: \ldots, \:\varepsilon_{p}$, that are called \textit{Unique factors}.
 
-Agora, escrevemos que cada variável tem uma carga associada aos pesos da matriz quadrada  $\;\mathbf{W}_{(p \times p)}$ , que no caso da análise fatorial pode ter “$\;m\;$” fatores, com  “$m \leq p$\;”  e doravante denotada por  $\mathbf{L}_{(p \times m)}$. 
+We can write each variable with some association to the vector from $\;\mathbf{W}_{(p \times p)}$, but in EFA we are able to pic up “$\;m\;$” factors, with  “$m \leq p$\;”  and from now on denoted  $\mathbf{L}_{(p \times m)}$. 
 $$
 \hat{\mathbf{\Sigma}}\,=\, \underbrace{\hat{\mathbf{\Lambda}}_{x}  \hat{\mathbf{\Lambda}}^{\prime}_{x}}_{\text{communality}} \; + \; \underbrace{\hat{\mathbf{\Psi}}_{\varepsilon}}_{\text{uniqueness}}
 $$
@@ -831,7 +831,7 @@ Not good, model is <u>under identified</u> (can find solution).
 And changing for four items and one LV?
 $$
 \begin{equation}
-\tag{8}
+\tag{5}
 \Sigma(\theta)=\underbrace{\begin{bmatrix}
 \lambda_{1}     \\
 \lambda_{2}     \\
@@ -853,7 +853,7 @@ $$
             }_{\mathbf{residual \; covariance}}
 \end{equation}
 $$
-For four items we will have **ten pieces** of non-redundant information: 4(4+1)/2 = 10. So, if the none of their error variances covary, we have 10 of unique parameters, and 9 number of fixed parameters (4 loadings, 4 variances and one variance of the factor ($\psi_{11}$).
+For four items we will have **ten pieces** of non-redundant information: 4(4+1)/2 = 10. So, if the none of their error variances covary, we have 10 of unique parameters, and 9 number of free parameters (4 loadings, 4 variances and one variance of the factor ($\psi_{11}$).
 So we have a model overidentified.
 
 <div class="alert alert-info">
@@ -953,13 +953,19 @@ summary(fits$Latecov)
 
 The interpretation is easy, first we have the loadings at the **Estimate** column (*q7*(1.384)) and `q6` as 1? 
 
-It means `lavaan` is fixing the first loading at 1 (<u>marker method</u> is the *default method*). So it is a fixed parameter, there is no statistics for it, but the others are free estimates. The number os free parameters are 13 minus 2 fixed parameters. The *df* is 15 (unique parameters) - 11 = 4.
+It means `lavaan` is fixing the first loading at 1 (<u>marker method</u> is the *default method*). 
+
+So it is a fixed parameter, there is no statistics for it, but the others are free estimates. 
+
+The number os free parameters are 13 minus 2 fixed parameters. 
+
+The *df* is 15 (unique parameters) - 11 = 4.
 
 For one unit (in terms of item *q6*) increase in **Pcknow**, item **q7** goes up 1.384 points . In **Variances** we can see that variance of the factor, in scale of item `q6`, and the **dot** (.) means error.
 
 ### Standardized Latent Variable
 
-Fixing the variance of each factor to 1 but freely estimates of the all loadings. It makes a LV a standardized variable (Z-score). If the indicator variables are also standardized, the loadings are interpreted as regression coefficients. Moreover, the covariance among the LV becomes a correlation.
+Fixing the variance of each factor to 1 but freely estimates of the all loadings. It makes a LV a standardized variable (Z-score - $z=(x-\mu_{x}) / \sigma_{x}$). If the indicator variables are also standardized, the loadings are interpreted as regression coefficients. Moreover, the covariance among the LV becomes a correlation.
 
 $$
 \Sigma(\theta)=\underbrace{\begin{bmatrix}
@@ -1086,8 +1092,7 @@ with $n$ as sample size, $p$ exogenous variables, and $q$ is the number of endog
 
 [^10]:ALAVI, M., VISENTIN, D. C., THAPA, D. K., HUNT, G. E., WATSON, R., & CLEARY, M. L.. Chi-square for model fit in confirmatory factor analysis.2020.
 
-The Test Statistic is relatively large (23.935) and there is an additional row with P-value (Chi-square) indicating that we reject the null hypothesis.
-
+The Test Statistic is relatively large (23.935) and there is an additional row with P-value (Chi-square) indicating that we **reject the null hypothesis**.
 ```{r, summaryLatecov2}
 #Eight Item Two-Factor CFA and Latent Covs = 1 (Over-Identified)
 summary(fits$Latecov2)
@@ -1164,9 +1169,13 @@ summary(onefac3items_base)
 ```{r, base line model var2}
 semPaths(onefac3items_base, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE) 
 ```
-There is no factor predicting it, there is no residual, so the residual is the variance - with no covariances. This is the baseline model, the worst of them, because probably the variables are correlated with each other.
+There is no factor predicting it, there is no residual, so the residual is the variance - with no covariances. This is the **baseline model**, <u>the worst of them</u>, because probably the variables are correlated with each other.
 
-Think of the **null** or **baseline model** as the <u>worst model</u> you can come up with and the **saturated model** as the <u>best model</u>. The **saturated model** or just identified, it is that with df=0. So the <u>**user model**</u> will be the one is between the baseline and saturated model.
+Think of the **null** or **baseline model** as the <u>worst model</u> you can come up with and the **saturated model** as the <u>best model</u>. 
+
+The **saturated model** or just identified, it is that with df=0. 
+
+So the <u>**user model**</u> will be the one is between the baseline and saturated model.
 
 Theoretically, the baseline model is useful for understanding how other fit indices are calculated.
 
@@ -1231,7 +1240,9 @@ Some criteria claims 0.90 to 0.95 as a good cutoff for good fit.
 
 <div class="alert alert-info">
   <strong>Comparative Fit Index</strong> 
-**CFI**: The Comparative Fit Index is a revised form of NFI. Not very sensitive to sample size (Fan, Thompson, & Wang, 1999). Compares the fit of a target model to the fit of an independent, or null, model. 
+**CFI**: 
+
+The Comparative Fit Index is a revised form of NFI. Not very sensitive to sample size (Fan, Thompson, & Wang, 1999). Compares the fit of a target model to the fit of an independent, or null, model. 
 
 <u>It should be >.90</u>. 
 
@@ -1276,7 +1287,7 @@ where $n$ is the total number of observations. The cutoff criteria as defined in
   <strong>Table!</strong>
   
 + $\leq 0.05$ (**close-fit**)
-+ between $0.05$ and  $**0.08**$ (reasonable approximate fit, fails close-fit but also fails poor-fit)
++ between $0.05$ and  $0.08$ (reasonable approximate fit, fails close-fit but also fails poor-fit)
 + $\geq 0.10$ (**poor-fit**)
 </div>
 
@@ -1338,6 +1349,44 @@ Comparing the two solutions, the loadings and variance of the factors are differ
 
 I mean,  for one standard deviation in **Pcknow**, **q6**  goes up to 0.604 standard deviation units.
 ~~~
+
+Since we have the correlation between factor and indicators, <u>squaring a completely standardized factor loading</u> provides the proportion of variance in the indicator that is explained by the latent factor. For example, **pcknow** accounts for 36,5\% of the variance in the indicator **q6** ($0,604^{2}=0,3648$). So, 63\% ($1-0,604^{2}=0.6352$) of the observed variance in **q6** is estimated to be <u>unique</u> or error variance.
+
+## Modification Index
+
+The Modification Index reflects an approximation of how much the overall model $\chi^{2}$ would decrease in the fixed or constrained parameter was freely estimated.
+
+Modification indices can be requested by adding the argument `modindices = TRUE` in the `summary()` call, or by calling the function `modindices()` directly. By default, modification indices are printed out for each nonfree (or fixed-to-zero) parameter. 
+
+The modification indices are supplemented by the **expected parameter change (EPC)** values (column epc). The last three columns contain the standardized EPC values (sepc.lv: only standardizing the latent variables; sepc.all: standardizing all variables; sepc.nox: standardizing all but exogenous observed variables).
+
+Let`s run baseline model
+```{r, mod indi}
+modindices(fits$Latecov2_plain, sort = TRUE)
+```
+the modification index (mi) which is a 1-degree chi-square statistic.
+We see that by far the most impactful parameter is `q04 ~~ q05` with a chi-square change of 19.180 - minus 19.180 in the predecessor $\chi^{2}$ - 23.935. Therefore, with such model inclusion we will have $\chi^{2}$ 4.091. Let's run the new model 
+
+```{r, sumLatecov2 plain2}
+# 2 factors 5 items, plain model
+myModels$Latecov2_plain2 <- '
+#Reg
+pcknow =~ q06 + q07
+statknow =~ q01 + q04 + q05 
+
+#variances and covariances
+
+statknow ~~ pcknow
+q04 ~~ q05
+'
+fits$Latecov2_plain2 <- lavaan::cfa(myModels$Latecov2_plain2, data = dat1, meanstructure = FALSE)            
+summary(fits$Latecov2_plain2, standardized=TRUE, fit.measures=TRUE)
+# standardized=TRUE will show us all methods (marker, variance and automatic standardized)
+```
+
+## Some other stuff
+
+**Introducing intercepts**
 ```{r, resumo intercept}
 #two factors, variance std and intercept 
 myModels$Latecov2_intercept <- '
@@ -1358,10 +1407,6 @@ statknow ~~ pcknow
 fits$Latecov2_intercept <- lavaan::cfa(myModels$Latecov2_intercept, data = dat1, std.lv=FALSE, meanstructure = TRUE)
 summary(fits$Latecov2_intercept,standardized=TRUE, fit.measures=TRUE)
 ```
-Since we have the correlation between factor and indicators, <u>squaring a completely standardized factor loading</u> provides the proportion of variance in the indicator that is explained by the latent factor. For example, **pcknow** accounts for 36,5\% of the variance in the indicator **q6** ($0,604^{2}=0,3648$). So, 63\% ($1-0,604^{2}=0.6352$) of the observed variance in **q6** is estimated to be <u>unique</u> or error variance.
-
-
-**Introducing intercepts**
 
 ```{r, path for intercept}
 semPaths(fits$Latecov2_intercept, whatLabel = "est", edge.label.cex = 0.9, residuals = TRUE)
@@ -1373,20 +1418,6 @@ parameterEstimates(fits$Latecov2_intercept, standardized=TRUE) %>%
   kable(digits = 3, caption="Factor Loadings") %>%
   kable_styling(full_width = FALSE, bootstrap_options = c("striped", "hover", "responsive", "condensed"))
 ```
-## Modification Index
-
-The Modification Index reflects an approximation of how much the overall model $\chi^{2}$ would decrease in the fixed or constrained parameter was freely estimated.
-
-Modification indices can be requested by adding the argument `modindices = TRUE` in the `summary()` call, or by calling the function `modindices()` directly. By default, modification indices are printed out for each nonfree (or fixed-to-zero) parameter. 
-
-The modification indices are supplemented by the **expected parameter change (EPC)** values (column epc). The last three columns contain the standardized EPC values (sepc.lv: only standardizing the latent variables; sepc.all: standardizing all variables; sepc.nox: standardizing all but exogenous observed variables).
-
-Let`s run baseline model
-```{r, mod indi}
-modindices(onefac8items_a, sort = TRUE)
-```
-the modification index (mi) which is a 1-degree chi-square statistic.
-We see that by far the most impactful parameter is `q06 ~~ q07` with a chi-square change of 323.096 - minus 323.096 in the predecessor $\chi^{2}$. 
 
 
 **Model-Implied Variance-Covariance ($\hat{\Sigma}$)**
