@@ -32,16 +32,18 @@ library(psych)
 library(tinytex)
 library(EnvStats)
 library(corrplot)
+library(writexl)
 ```
 
 **The `getwd()` returns an absolute filepath representing the current working directory of the R process;**
 ```{r, diretorio}
 getwd()
+#/Users/rafaelpoerschke/GitHub/CFA_withR
 ```
 
 `setwd("dir")` **is used to set the working directory.** 
 ```{r}
-setwd("/Users/rafaelpoerschke/dados/multivariada")
+setwd("/Users/rafaelpoerschke/GitHub/CFA_withR")
 ```
 
 ## Data Set {.tabset .tabset-fade}
@@ -98,18 +100,27 @@ SPSS Anxiety Questionnaire (SAQ).  The first <u>eight</u> items consist of the f
 + <u>q7</u>: All computers hate me
 + <u>q8</u>: I have never been good at mathematics
 
-## {-}
+## {-} 
 
 You can load the file directly into R with the following command. 
 
 **Loading the data:**
 ```{r, banco1}
-dat <- read.csv("https://stats.idre.ucla.edu/wp-content/uploads/2021/02/worland5.csv")
+dat <- read.csv("/Users/rafaelpoerschke/GitHub/CFA_withR/worland5.csv")
+#url <- "https://stats.idre.ucla.edu/wp-content/uploads/2021/02/worland5.csv"
+#destfile <- "/Users/rafaelpoerschke/GitHub/CFA_withR/worland5.csv"
+#download.file(url, destfile)
 ```
 Importing a datafile from SPSS arquive (we will use it latter)
 ```{r, banco2}
-dat1 <- read.spss("https://stats.idre.ucla.edu/wp-content/uploads/2018/05/SAQ.sav", to.data.frame=TRUE, use.value.labels = FALSE)
-#save(dat1, file = "dat1.RData")
+dat1 <- read.spss("/Users/rafaelpoerschke/GitHub/CFA_withR/SAQ.sav", to.data.frame=TRUE, use.value.labels = FALSE)
+#save(dat13, file = "dat1.RData")
+#"https://stats.idre.ucla.edu/wp-content/uploads/2018/05/SAQ.sav"
+```
+
+How to Export a DataFrame to Excel File in R?
+```{r, export to excel}
+#write_xlsx(dat1,"\database1.xlsx")
 ```
 The most essential component of a structural equation model is
 <u>covariance</u> or the statistical relationship between items. The true population covariance, denoted $\mathbf{\Sigma}$, is called the variance-covariance matrix. Since we do not know $\mathbf{\Sigma}$ we can estimate it with our sample $\mathbf{\Sigma}(\theta)$, and call it $\mathbf{S}$, or the sample variance-covariance matrix. 
@@ -127,12 +138,12 @@ The function `cov` specifies that we want to <u>obtain the covariance matrix</u>
 #### Covariance-Variance Matrix
 **Covariance-Variance Table set1**
 ```{r, Covariance Matrix}
-cov(dat)
+#cov(dat)
 ```
 #### Correlation Matrix
 **Correlation Table set1**
 ```{r, Correlation Table}
-round(cov(dat[,1:9]),2)
+#round(cov(dat[,1:9]),2)
 ```
 #### Covariance-Variance Matrix set2
 **Covariance-Variance Table set2**
